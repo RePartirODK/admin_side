@@ -1,0 +1,55 @@
+<div class="login-container">
+  <div class="login-card">
+    <!-- Logo Section -->
+    <div class="logo-section">
+      <div class="logo">
+        <img src="assets/logo.png" alt="RePartir Logo" class="logo-image">
+      </div>
+      <h2 class="login-title">Login</h2>
+    </div>
+
+    <!-- Login Form -->
+    <form class="login-form" (ngSubmit)="onLogin()">
+      <!-- Email Field -->
+      <div class="input-group">
+        <div class="input-icon">
+          <i class="fas fa-envelope"></i>
+        </div>
+        <input
+          type="email"
+          class="form-input"
+          placeholder="Email adresse"
+          [(ngModel)]="loginData.email"
+          name="email"
+          autocomplete="email"
+          required>
+      </div>
+
+      <!-- Password Field -->
+      <div class="input-group">
+        <div class="input-icon">
+          <i class="fas fa-lock"></i>
+        </div>
+        <input
+          [type]="showPassword ? 'text' : 'password'"
+          class="form-input"
+          placeholder="Mot de passe"
+          [(ngModel)]="loginData.password"
+          name="password"
+          autocomplete="current-password"
+          required>
+        <button
+          type="button"
+          class="password-toggle"
+          (click)="togglePassword()">
+          <i class="fas" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
+        </button>
+      </div>
+
+      <!-- Login Button -->
+      <button type="submit" class="login-btn">
+        Se connecter
+      </button>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,95 @@
+<div class="modal-overlay" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <button class="back-btn" (click)="closeModal()">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <div class="modal-header">
+      <div class="user-icon">
+        <i class="fas fa-user-edit"></i>
+      </div>
+      <h2 class="modal-title">Modifier Admin</h2>
+      <p class="modal-subtitle">Modifiez les informations de l'administrateur</p>
+    </div>
+
+    <!-- Form -->
+    <form class="admin-form" (ngSubmit)="updateAdmin()">
+      <!-- Nom Field -->
+      <div class="input-group">
+        <div class="input-icon">
+          <i class="fas fa-user"></i>
+        </div>
+        <input 
+          type="text" 
+          class="form-input" 
+          [class.error]="errors.nom"
+          placeholder="Entrez le nom"
+          [(ngModel)]="adminForm.nom"
+          name="nom"
+          autocomplete="off"
+          required>
+        <div class="error-message" *ngIf="errors.nom">{{ errors.nom }}</div>
+      </div>
+
+      <!-- Prénom Field -->
+      <div class="input-group">
+        <div class="input-icon">
+          <i class="fas fa-user"></i>
+        </div>
+        <input 
+          type="text" 
+          class="form-input" 
+          [class.error]="errors.prenom"
+          placeholder="Entrez le prénom"
+          [(ngModel)]="adminForm.prenom"
+          name="prenom"
+          autocomplete="off"
+          required>
+        <div class="error-message" *ngIf="errors.prenom">{{ errors.prenom }}</div>
+      </div>
+
+      <!-- Email Field -->
+      <div class="input-group">
+        <div class="input-icon">
+          <i class="fas fa-envelope"></i>
+        </div>
+        <input 
+          type="email" 
+          class="form-input" 
+          [class.error]="errors.email"
+          placeholder="Entrez l'adresse email"
+          [(ngModel)]="adminForm.email"
+          name="email"
+          autocomplete="off"
+          required>
+        <div class="error-message" *ngIf="errors.email">{{ errors.email }}</div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="input-group">
+        <div class="input-icon">
+          <i class="fas fa-lock"></i>
+        </div>
+        <input 
+          [type]="showPassword ? 'text' : 'password'" 
+          class="form-input" 
+          [class.error]="errors.password"
+          placeholder="Nouveau mot de passe (optionnel)"
+          [(ngModel)]="adminForm.password"
+          name="password"
+          autocomplete="new-password">
+        <button 
+          type="button" 
+          class="password-toggle" 
+          (click)="togglePassword()">
+          <i class="fas" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
+        </button>
+        <div class="error-message" *ngIf="errors.password">{{ errors.password }}</div>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="update-btn">
+        Mettre à jour
+      </button>
+    </form>
+  </div>
+</div>

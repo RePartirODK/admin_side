@@ -1,0 +1,49 @@
+<!-- Modal Overlay -->
+<div class="modal-overlay" (click)="onBackdropClick($event)">
+  <div class="modal-container">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h3 class="modal-title">
+        <i class="fas fa-exclamation-triangle"></i>
+        Confirmer la suppression
+      </h3>
+      <button class="close-btn" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+      <div class="warning-icon">
+        <i class="fas fa-trash-alt"></i>
+      </div>
+      
+      <div class="confirmation-message">
+        <h4>Êtes-vous sûr de vouloir supprimer ce domaine ?</h4>
+        <p>
+          Le domaine <strong>"{{ domainName }}"</strong> sera définitivement supprimé.
+          Cette action ne peut pas être annulée.
+        </p>
+      </div>
+
+      <div class="warning-box">
+        <i class="fas fa-info-circle"></i>
+        <span>Cette action supprimera également toutes les données associées à ce domaine.</span>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+      <button type="button" class="btn-cancel" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+        Annuler
+      </button>
+      <button type="button" class="btn-delete" (click)="confirmDelete()">
+        <i class="fas fa-trash"></i>
+        Supprimer définitivement
+      </button>
+    </div>
+  </div>
+</div>
+
+

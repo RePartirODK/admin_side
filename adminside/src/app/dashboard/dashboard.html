@@ -1,0 +1,264 @@
+<div class="admin-dashboard">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <!-- Logo RePartir -->
+    <div class="logo-section">
+      <img src="assets/logo.png" alt="RePartir Logo" class="logo">
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav-menu">
+      <ul class="nav-list">
+        <li class="nav-item active">
+          <a href="/dashboard" class="nav-link">
+            <i class="fas fa-home"></i>
+            <span>Tableau de bord</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/centres-formation" class="nav-link">
+            <i class="fas fa-users-cog"></i>
+            <span>Gestion utilisateurs</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/liste-admin" class="nav-link">
+            <i class="fas fa-users"></i>
+            <span>Administrateurs</span>
+          </a>
+        </li>
+            <li class="nav-item">
+              <a href="/statistiques" class="nav-link">
+                <i class="fas fa-chart-bar"></i>
+                <span>Statistiques</span>
+              </a>
+            </li>
+      </ul>
+    </nav>
+
+        <!-- Déconnexion -->
+        <div class="logout-section">
+          <a href="#" class="logout-link" (click)="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Déconnexion</span>
+          </a>
+        </div>
+  </aside>
+
+  <!-- Contenu principal -->
+  <main class="main-content">
+    <!-- En-tête -->
+    <header class="header">
+      <div class="header-left">
+        <!-- Bouton toggle pour mobile si nécessaire -->
+      </div>
+      <div class="header-right">
+        <div class="notifications" (click)="openNotificationsModal()">
+          <i class="fas fa-bell"></i>
+          <span class="notification-badge" *ngIf="getUnreadNotificationsCount() > 0">{{ getUnreadNotificationsCount() }}</span>
+        </div>
+        <div class="user-info">
+          <span class="user-name">Bakary Diallo</span>
+        </div>
+            <div class="user-avatar">
+              <img src="assets/pp.png" alt="Profile">
+            </div>
+      </div>
+    </header>
+
+    <!-- Contenu du dashboard -->
+    <div class="dashboard-content">
+          <!-- Message de bienvenue et Actions rapides -->
+          <div class="welcome-actions-container">
+            <!-- Message de bienvenue -->
+            <div class="welcome-section">
+              <h2 class="welcome-title">
+                <span class="welcome-emoji">👋</span>
+                Bonjour Bakary, voici un aperçu de votre<br> tableau de bord.
+              </h2>
+              <p class="welcome-subtitle">Consultez les statistiques et gérez vos centres de formation</p>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="quick-actions-section">
+              <h3 class="section-title">Actions rapides</h3>
+              <div class="action-buttons">
+                <button class="action-btn" (click)="addAdmin()">
+                  <i class="fas fa-plus"></i>
+                  ADD Admin
+                </button>
+                <button class="action-btn" (click)="addDomain()">
+                  <i class="fas fa-tag"></i>
+                  Domaine
+                </button>
+                <button class="action-btn" (click)="viewDomains()">
+                  <i class="fas fa-list"></i>
+                  Voir domaines
+                </button>
+              </div>
+            </div>
+          </div>
+
+      <!-- Colonnes principales -->
+      <div class="main-columns">
+        <!-- Colonne gauche -->
+        <div class="left-column">
+          <!-- Cartes de statistiques -->
+          <div class="stats-grid">
+            <div class="stat-card stat-blue">
+              <div class="stat-content">
+                <div class="stat-text">
+                  <h4 class="stat-title">Centres de formation</h4>
+                  <div class="stat-value">124</div>
+                </div>
+                <div class="stat-icon">
+                  <i class="fas fa-building"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="stat-card stat-red">
+              <div class="stat-content">
+                <div class="stat-text">
+                  <h4 class="stat-title">Comptes bloqués</h4>
+                  <div class="stat-value">7</div>
+                </div>
+                <div class="stat-icon">
+                  <i class="fas fa-shield-alt"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="stat-card stat-yellow">
+              <div class="stat-content">
+                <div class="stat-text">
+                  <h4 class="stat-title">En attente</h4>
+                  <div class="stat-value">12</div>
+                </div>
+                <div class="stat-icon">
+                  <i class="fas fa-clock"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="stat-card stat-green">
+              <div class="stat-content">
+                <div class="stat-text">
+                  <h4 class="stat-title">Administrateurs actifs</h4>
+                  <div class="stat-value">5</div>
+                </div>
+                <div class="stat-icon">
+                  <i class="fas fa-users"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Colonne droite -->
+        <div class="right-column">
+          <!-- Activité récente -->
+          <div class="recent-activities-section">
+            <div class="section-header">
+              <h3 class="section-title">Activité récente</h3>
+              <a href="#" class="view-all-link" (click)="viewAllActivities()">Voir tout</a>
+            </div>
+            <div class="activities-list">
+              <div class="activity-item">
+                <div class="activity-icon">
+                  <i class="fas fa-wave-square"></i>
+                </div>
+                <div class="activity-content">
+                  <span class="activity-message">Centre de Formation 1 a été accepté</span>
+                  <span class="activity-time">Il y a 1 heure</span>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon">
+                  <i class="fas fa-wave-square"></i>
+                </div>
+                <div class="activity-content">
+                  <span class="activity-message">Centre de Formation 2 a été refusé</span>
+                  <span class="activity-time">Il y a 2 heures</span>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon">
+                  <i class="fas fa-wave-square"></i>
+                </div>
+                <div class="activity-content">
+                  <span class="activity-message">Centre de Formation 3 a été accepté</span>
+                  <span class="activity-time">Il y a 3 heures</span>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon">
+                  <i class="fas fa-wave-square"></i>
+                </div>
+                <div class="activity-content">
+                  <span class="activity-message">Centre de Formation 4 a été refusé</span>
+                  <span class="activity-time">Il y a 4 heures</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Admin Modal -->
+<app-admin-modal
+  *ngIf="showAdminModal"
+  (modalClosed)="closeAdminModal()"
+  (adminCreated)="onAdminCreated($event)">
+</app-admin-modal>
+
+<!-- Confirmation Modal -->
+<app-confirmation-modal
+  *ngIf="showConfirmationModal"
+  [adminName]="createdAdminName"
+  (modalClosed)="closeConfirmationModal()">
+</app-confirmation-modal>
+
+<!-- Domain Modal -->
+<app-domain-modal
+  *ngIf="showDomainModal"
+  (modalClosed)="closeDomainModal()"
+  (domainCreated)="onDomainCreated($event)">
+</app-domain-modal>
+
+<!-- Domains List Modal -->
+<app-domains-list-modal
+  *ngIf="showDomainsListModal"
+  [domains]="domains"
+  (modalClosed)="closeDomainsListModal()"
+  (domainEdit)="editDomain($event)"
+  (domainDelete)="deleteDomain($event)">
+</app-domains-list-modal>
+
+<!-- Edit Domain Modal -->
+<app-edit-domain-modal
+  *ngIf="showEditDomainModal"
+  [domain]="selectedDomain"
+  (modalClosed)="closeEditDomainModal()"
+  (domainUpdated)="onDomainUpdated($event)">
+</app-edit-domain-modal>
+
+<!-- Delete Domain Modal -->
+<app-delete-domain-modal
+  *ngIf="showDeleteDomainModal"
+  [domainName]="selectedDomain?.libelle || ''"
+  (modalClosed)="closeDeleteDomainModal()"
+  (domainDeleted)="confirmDomainDeletion()">
+</app-delete-domain-modal>
+
+<!-- Notifications Modal -->
+<app-notifications-modal
+  *ngIf="showNotificationsModal"
+  [notifications]="notifications"
+  (modalClosed)="closeNotificationsModal()"
+  (notificationRead)="onNotificationRead($event)">
+</app-notifications-modal>

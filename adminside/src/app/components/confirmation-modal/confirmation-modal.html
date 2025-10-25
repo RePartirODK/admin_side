@@ -1,0 +1,26 @@
+<!-- Confirmation Modal Overlay -->
+<div class="confirmation-overlay" (click)="closeModal()">
+  <!-- Confirmation Modal Content -->
+  <div class="confirmation-content" (click)="$event.stopPropagation()">
+    <!-- Success Icon -->
+    <div class="success-icon">
+      <i class="fas fa-check-circle"></i>
+    </div>
+
+    <!-- Title -->
+    <h2 class="confirmation-title">Compte Admin Créé !</h2>
+    
+    <!-- Message -->
+    <p class="confirmation-message">
+      L'administrateur <strong>{{ adminName }}</strong> a été créé avec succès.
+    </p>
+
+    <!-- Buttons -->
+    <div class="confirmation-buttons">
+      <button class="confirm-btn" (click)="closeModal()">
+        <i class="fas fa-check"></i>
+        Parfait !
+      </button>
+    </div>
+  </div>
+</div>

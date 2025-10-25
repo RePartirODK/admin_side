@@ -1,0 +1,54 @@
+<!-- Modal Overlay -->
+<div class="modal-overlay" (click)="onBackdropClick($event)">
+  <div class="modal-container">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h3 class="modal-title">
+        <i class="fas fa-bell"></i>
+        Notifications
+        <span class="notification-count" *ngIf="notifications.length > 0">{{ notifications.length }}</span>
+      </h3>
+      <button class="close-btn" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+      <div class="empty-state" *ngIf="notifications.length === 0">
+        <div class="empty-icon">
+          <i class="fas fa-bell-slash"></i>
+        </div>
+        <h4>Aucune notification</h4>
+        <p>Vous n'avez pas de nouvelles notifications.</p>
+      </div>
+
+      <div class="notifications-list" *ngIf="notifications.length > 0">
+        <div 
+          class="notification-item" 
+          *ngFor="let notification of notifications"
+          [class.unread]="!notification.lu"
+          (click)="markAsRead(notification.id)">
+          <div class="notification-icon" [style.background-color]="getNotificationColor(notification.type)">
+            <i [class]="getNotificationIcon(notification.type)"></i>
+          </div>
+          <div class="notification-content">
+            <p class="notification-message">{{ notification.message }}</p>
+            <span class="notification-date">{{ formatDate(notification.date) }}</span>
+          </div>
+          <div class="notification-badge" *ngIf="!notification.lu">
+            <i class="fas fa-circle"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+      <button type="button" class="btn-close" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+        Fermer
+      </button>
+    </div>
+  </div>
+</div>

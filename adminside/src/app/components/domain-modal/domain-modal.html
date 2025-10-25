@@ -1,0 +1,63 @@
+<!-- Modal Overlay -->
+<div class="modal-overlay" (click)="onBackdropClick($event)">
+  <div class="modal-container">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h3 class="modal-title">
+        <i class="fas fa-plus-circle"></i>
+        Ajouter un domaine
+      </h3>
+      <button class="close-btn" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+      <form (ngSubmit)="createDomain()" #domainForm="ngForm">
+        <div class="form-group">
+          <label for="libelle" class="form-label">
+            <i class="fas fa-tag"></i>
+            Libellé du domaine
+          </label>
+          <input
+            type="text"
+            id="libelle"
+            name="libelle"
+            [(ngModel)]="libelle"
+            #libelleInput="ngModel"
+            class="form-input"
+            placeholder="Ex: Informatique, Marketing, Finance..."
+            required
+            minlength="2"
+            maxlength="50"
+            autofocus
+          />
+          <div class="form-error" *ngIf="libelleInput.invalid && libelleInput.touched">
+            <span *ngIf="libelleInput.errors?.['required']">Le libellé est requis</span>
+            <span *ngIf="libelleInput.errors?.['minlength']">Le libellé doit contenir au moins 2 caractères</span>
+            <span *ngIf="libelleInput.errors?.['maxlength']">Le libellé ne peut pas dépasser 50 caractères</span>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+      <button type="button" class="btn-cancel" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+        Annuler
+      </button>
+      <button 
+        type="button" 
+        class="btn-create" 
+        (click)="createDomain()"
+        [disabled]="!libelle.trim() || libelle.length < 2">
+        <i class="fas fa-check"></i>
+        Créer le domaine
+      </button>
+    </div>
+  </div>
+</div>
+
+

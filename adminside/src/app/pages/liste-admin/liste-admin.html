@@ -1,0 +1,142 @@
+<div class="liste-admin-page">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <!-- Logo RePartir -->
+    <div class="logo-section">
+      <img src="assets/logo.png" alt="RePartir Logo" class="logo">
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav-menu">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="/dashboard" class="nav-link">
+            <i class="fas fa-home"></i>
+            <span>Tableau de bord</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/centres-formation" class="nav-link">
+            <i class="fas fa-users-cog"></i>
+            <span>Gestion utilisateurs</span>
+          </a>
+        </li>
+        <li class="nav-item active">
+          <a href="/liste-admin" class="nav-link">
+            <i class="fas fa-users"></i>
+            <span>Administrateurs</span>
+          </a>
+        </li>
+            <li class="nav-item">
+              <a href="/statistiques" class="nav-link">
+                <i class="fas fa-chart-bar"></i>
+                <span>Statistiques</span>
+              </a>
+            </li>
+      </ul>
+    </nav>
+
+        <!-- Déconnexion -->
+        <div class="logout-section">
+          <a href="#" class="logout-link" (click)="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Déconnexion</span>
+          </a>
+        </div>
+  </aside>
+
+  <!-- Contenu principal -->
+  <main class="main-content">
+    <!-- En-tête -->
+    <header class="header">
+      <div class="header-left">
+        <!-- Bouton toggle pour mobile si nécessaire -->
+      </div>
+      <div class="header-right">
+        <div class="notifications">
+          <i class="fas fa-bell"></i>
+          <span class="notification-badge">3</span>
+        </div>
+        <div class="user-info">
+          <span class="user-name">Bakary Diallo</span>
+        </div>
+            <div class="user-avatar">
+              <img src="assets/pp.png" alt="Profile">
+            </div>
+      </div>
+    </header>
+
+    <!-- Contenu de la page -->
+    <div class="page-content">
+      <!-- En-tête de la page -->
+      <div class="page-header">
+        <div class="header-left">
+          <h1 class="page-title">Liste Admin</h1>
+          <p class="page-subtitle">Gérez les administrateurs de votre plateforme</p>
+        </div>
+        <button class="add-admin-btn" (click)="openAddAdminModal()">
+          <i class="fas fa-plus"></i>
+          ADD Admin
+        </button>
+      </div>
+
+      <!-- Statistiques -->
+      <div class="stats-section">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-number">{{ admins.length }}</h3>
+            <p class="stat-label">Total Admins</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Liste des administrateurs -->
+      <div class="admin-list">
+        <div class="admin-card" *ngFor="let admin of admins">
+          <div class="admin-avatar">
+            <img [src]="admin.avatar" [alt]="admin.nom">
+          </div>
+          <div class="admin-info">
+            <h3 class="admin-name">{{ admin.prenom }} {{ admin.nom }}</h3>
+            <p class="admin-email">{{ admin.email }}</p>
+            <div class="admin-role-badge admin">
+              <i class="fas fa-user-shield"></i>
+              Admin
+            </div>
+            <div class="admin-actions">
+              <button class="action-btn edit-btn" (click)="modifierAdmin(admin)">
+                <i class="fas fa-edit"></i>
+                Modifier
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Admin Modal -->
+<app-admin-modal
+  *ngIf="showAdminModal"
+  (modalClosed)="closeAdminModal()"
+  (adminCreated)="onAdminCreated($event)">
+</app-admin-modal>
+
+    <!-- Confirmation Modal -->
+    <app-confirmation-modal
+      *ngIf="showConfirmationModal"
+      [adminName]="createdAdminName"
+      (modalClosed)="closeConfirmationModal()">
+    </app-confirmation-modal>
+
+    <!-- Edit Admin Modal -->
+    <app-edit-admin-modal
+      *ngIf="showEditModal"
+      [adminData]="selectedAdmin"
+      (modalClosed)="closeEditModal()"
+      (adminUpdated)="onAdminUpdated($event)">
+    </app-edit-admin-modal>

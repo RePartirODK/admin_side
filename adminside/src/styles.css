@@ -1,1 +1,31 @@
-/* You can add global styles to this file, and also import other style files */
+/* Import Font Awesome */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+
+/* Variables CSS globales */
+:root {
+  --primary-blue: #3EB2FF;
+  --secondary-blue: #3EB2FF;
+  --success-green: #4CAF50;
+  --warning-yellow: #F5A623;
+  --danger-red: #E74C3C;
+  --light-gray: #F8F9FA;
+  --medium-gray: #E9ECEF;
+  --dark-gray: #6C757D;
+  --white: #FFFFFF;
+  --black: #000000;
+  --sidebar-width: 250px;
+  --navbar-height: 70px;
+}
+
+/* Reset global */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--light-gray);
+  color: #333;
+}

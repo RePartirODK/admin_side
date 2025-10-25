@@ -1,0 +1,59 @@
+<!-- Modal Overlay -->
+<div class="modal-overlay" (click)="onBackdropClick($event)">
+  <div class="modal-container">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h3 class="modal-title">
+        <i class="fas fa-list"></i>
+        Liste des domaines
+      </h3>
+      <button class="close-btn" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+      <div class="domains-count" *ngIf="domains.length > 0">
+        <i class="fas fa-info-circle"></i>
+        {{ domains.length }} domaine(s) créé(s)
+      </div>
+
+      <div class="empty-state" *ngIf="domains.length === 0">
+        <div class="empty-icon">
+          <i class="fas fa-folder-open"></i>
+        </div>
+        <h4>Aucun domaine créé</h4>
+        <p>Il n'y a pas encore de domaine dans le système.</p>
+      </div>
+
+      <div class="domains-list" *ngIf="domains.length > 0">
+        <div class="domain-item" *ngFor="let domain of domains; let i = index">
+          <div class="domain-number">{{ i + 1 }}</div>
+          <div class="domain-content">
+            <div class="domain-name">
+              <i class="fas fa-tag"></i>
+              {{ domain.libelle }}
+            </div>
+          </div>
+          <div class="domain-actions">
+            <button class="btn-edit" title="Modifier" (click)="editDomain(domain)">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn-delete" title="Supprimer" (click)="deleteDomain(domain)">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+      <button type="button" class="btn-close" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+        Fermer
+      </button>
+    </div>
+  </div>
+</div>
