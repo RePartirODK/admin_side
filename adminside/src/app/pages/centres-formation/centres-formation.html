@@ -53,12 +53,12 @@
         <!-- Bouton toggle pour mobile si nécessaire -->
       </div>
       <div class="header-right">
-        <div class="notifications">
+        <div class="notifications" (click)="openNotificationsModal()">
           <i class="fas fa-bell"></i>
-          <span class="notification-badge">3</span>
+          <span class="notification-badge" *ngIf="getUnreadNotificationsCount() > 0">{{ getUnreadNotificationsCount() }}</span>
         </div>
         <div class="user-info">
-          <span class="user-name">Bakary Diallo</span>
+          <span class="user-name">{{ currentUserName }}</span>
         </div>
             <div class="user-avatar">
               <img src="assets/pp.png" alt="Profile">
@@ -200,6 +200,14 @@
                       </td>
                       <td class="user-actions">
                         <div class="action-buttons">
+                          <button class="btn-accept" (click)="accepterEntreprise(entreprise)" *ngIf="entreprise.statut === 'En attente'">
+                            <i class="fas fa-check"></i>
+                            Accepter
+                          </button>
+                          <button class="btn-refuse" (click)="refuserEntreprise(entreprise)" *ngIf="entreprise.statut === 'En attente'">
+                            <i class="fas fa-times"></i>
+                            Refuser
+                          </button>
                           <button class="btn-block" (click)="bloquerEntreprise(entreprise)" *ngIf="entreprise.etat === 'Actif'">
                             <i class="fas fa-ban"></i>
                             Bloquer
@@ -362,3 +370,11 @@
     </div>
   </main>
 </div>
+
+<!-- Notifications Modal -->
+<app-notifications-modal
+  *ngIf="showNotificationsModal"
+  [notifications]="notifications"
+  (modalClosed)="closeNotificationsModal()"
+  (notificationRead)="onNotificationRead($event)">
+</app-notifications-modal>

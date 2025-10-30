@@ -1,0 +1,16 @@
+export enum Role {
+  JEUNE = 'JEUNE',
+  PARRAIN = 'PARRAIN',
+  MENTOR = 'MENTOR',
+  CENTRE = 'CENTRE',
+  ENTREPRISE = 'ENTREPRISE',
+  ADMIN = 'ADMIN'
+}
+
+export enum Etat {
+  EN_ATTENTE = 'EN_ATTENTE',
+  VALIDE = 'VALIDE',
+  REFUSE = 'REFUSE',
+  SUPPRIME = 'SUPPRIME'
+}
+

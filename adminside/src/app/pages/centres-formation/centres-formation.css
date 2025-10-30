@@ -177,9 +177,16 @@
 
 .user-name {
   color: white;
+  /* Force white in case of variable issues */
+  color: #ffffff;
   font-weight: 600;
   font-size: 15px;
   line-height: 1.2;
+}
+
+/* Ensure header name is white on this page regardless of global overrides */
+.header .user-info .user-name {
+  color: #ffffff !important;
 }
 
 .user-role {

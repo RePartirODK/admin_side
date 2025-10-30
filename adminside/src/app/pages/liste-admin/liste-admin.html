@@ -53,12 +53,12 @@
         <!-- Bouton toggle pour mobile si nécessaire -->
       </div>
       <div class="header-right">
-        <div class="notifications">
+        <div class="notifications" (click)="openNotificationsModal()">
           <i class="fas fa-bell"></i>
-          <span class="notification-badge">3</span>
+          <span class="notification-badge" *ngIf="getUnreadNotificationsCount() > 0">{{ getUnreadNotificationsCount() }}</span>
         </div>
         <div class="user-info">
-          <span class="user-name">Bakary Diallo</span>
+          <span class="user-name">{{ currentUserName }}</span>
         </div>
             <div class="user-avatar">
               <img src="assets/pp.png" alt="Profile">
@@ -118,6 +118,14 @@
     </div>
   </main>
 </div>
+
+<!-- Notifications Modal -->
+<app-notifications-modal
+  *ngIf="showNotificationsModal"
+  [notifications]="notifications"
+  (modalClosed)="closeNotificationsModal()"
+  (notificationRead)="onNotificationRead($event)">
+</app-notifications-modal>
 
 <!-- Admin Modal -->
 <app-admin-modal

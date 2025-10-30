@@ -1,39 +1,141 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
+import { StatisticsService } from '../../services/statistics.service';
+import { AdminsService } from '../../services/admins.service';
+import { MONTH_LABELS_FR } from '../../utils/month-labels';
+import { NotificationsModalComponent, Notification } from '../../components/notifications-modal/notifications-modal';
+import { NotificationsService } from '../../services/notifications.service';
 
 @Component({
   selector: 'app-statistiques',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, NotificationsModalComponent],
   templateUrl: './statistiques.html',
   styleUrl: './statistiques.css'
 })
-export class StatistiquesComponent {
-  // Données pour le graphique en barres - Inscriptions mensuelles
-  monthlyData = [
-    { month: 'Jan', value: 35 },
-    { month: 'Fev', value: 65 },
-    { month: 'Mar', value: 65 },
-    { month: 'Avr', value: 75 },
-    { month: 'Mai', value: 25 },
-    { month: 'Jun', value: 80 },
-    { month: 'Jul', value: 65 },
-    { month: 'Aou', value: 95 },
-    { month: 'Sep', value: 70 },
-    { month: 'Oct', value: 95 },
-    { month: 'Nov', value: 0 },
-    { month: 'Dec', value: 0 }
-  ];
+export class StatistiquesComponent implements OnInit {
+  // Données dynamiques une fois l'endpoint disponible
+  monthlyData: { month: string; value: number }[] = [];
 
   showTooltip = false;
   tooltipData = { month: '', value: 0 };
   tooltipPosition = { x: 0, y: 0 };
 
-  constructor(private router: Router) {}
+  year = new Date().getFullYear();
+  loading = true;
+
+  // Notifications
+  showNotificationsModal = false;
+  notifications: Notification[] = [];
+  currentUserName = '';
+
+  constructor(
+    private router: Router,
+    private statisticsService: StatisticsService,
+    private notificationsService: NotificationsService,
+    private adminsService: AdminsService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadStats();
+    this.loadCurrentUserName();
+  }
+
+  // Notifications
+  openNotificationsModal(): void {
+    this.showNotificationsModal = true;
+    this.loadNotifications();
+  }
+
+  private loadCurrentUserName(): void {
+    const email = localStorage.getItem('auth_email') || '';
+    const cached = localStorage.getItem('auth_name');
+    const cachedEmail = localStorage.getItem('auth_name_email');
+    if (cached && cachedEmail && cachedEmail.toLowerCase() === email.toLowerCase()) {
+      this.currentUserName = cached;
+      return;
+    }
+    if (!email) {
+      this.currentUserName = '';
+      return;
+    }
+    this.adminsService.listAdmins().subscribe({
+      next: (admins: any[]) => {
+        const me = (admins || []).find(a => (a?.email || '').toLowerCase() === email.toLowerCase());
+        const name = me ? `${me.prenom || ''} ${me.nom || ''}`.trim() : email;
+        this.currentUserName = name;
+        localStorage.setItem('auth_name', name);
+        localStorage.setItem('auth_name_email', email);
+      },
+      error: () => {
+        this.currentUserName = email;
+      }
+    });
+  }
+
+  closeNotificationsModal(): void {
+    this.showNotificationsModal = false;
+  }
+
+  onNotificationRead(notificationId: number): void {
+    this.notificationsService.marquerCommeLue(notificationId).subscribe({
+      next: () => {
+        const n = this.notifications.find(x => x.id === notificationId);
+        if (n) { n.lu = true; }
+      },
+      error: (err) => console.error('Erreur marquage notif comme lue', err)
+    });
+  }
+
+  getUnreadNotificationsCount(): number {
+    return this.notifications.filter(n => !n.lu).length;
+  }
+
+  private loadNotifications(): void {
+    this.notificationsService.getNonLues().subscribe({
+      next: (res) => {
+        if (res && Array.isArray(res)) {
+          this.notifications = res.map(r => ({
+            id: r.id || 0,
+            type: 'centre',
+            message: r.message || '',
+            date: r.dateCreation ? new Date(r.dateCreation) : new Date(),
+            lu: r.lue === true
+          }));
+        }
+      },
+      error: (err) => {
+        console.error('Erreur chargement notifications', err);
+        this.notifications = [];
+      }
+    });
+  }
+
+  loadStats(): void {
+    this.loading = true;
+    this.statisticsService.getDashboard(this.year).subscribe({
+      next: (stats) => {
+        this.monthlyData = stats.monthlyRegistrations.map((m: any) => ({
+          month: MONTH_LABELS_FR[m.month - 1] || '',
+          value: m.count
+        }));
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Erreur chargement statistiques', err);
+        this.loading = false;
+      }
+    });
+  }
 
   getMaxValue(): number {
-    return Math.max(...this.monthlyData.map(d => d.value));
+    if (!this.monthlyData || this.monthlyData.length === 0) return 100;
+    const max = Math.max(...this.monthlyData.map(d => d.value), 0);
+    if (max <= 25) return 25;
+    if (max <= 50) return 50;
+    if (max <= 75) return 75;
+    return 100;
   }
 
   getBarHeight(value: number): string {

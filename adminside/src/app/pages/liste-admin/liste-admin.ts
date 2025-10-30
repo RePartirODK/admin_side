@@ -1,9 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
+import { AdminsService } from '../../services/admins.service';
 import { AdminModalComponent } from '../../components/admin-modal/admin-modal';
 import { ConfirmationModalComponent } from '../../components/confirmation-modal/confirmation-modal';
 import { EditAdminModalComponent } from '../../components/edit-admin-modal/edit-admin-modal';
+import { NotificationsModalComponent, Notification } from '../../components/notifications-modal/notifications-modal';
+import { NotificationsService } from '../../services/notifications.service';
 
 interface Admin {
   id: number;
@@ -18,75 +21,212 @@ interface Admin {
 @Component({
   selector: 'app-liste-admin',
   standalone: true,
-  imports: [CommonModule, AdminModalComponent, ConfirmationModalComponent, EditAdminModalComponent],
+  imports: [CommonModule, AdminModalComponent, ConfirmationModalComponent, EditAdminModalComponent, NotificationsModalComponent],
   templateUrl: './liste-admin.html',
   styleUrl: './liste-admin.css'
 })
-export class ListeAdminComponent {
+export class ListeAdminComponent implements OnInit {
   showAdminModal = false;
   showConfirmationModal = false;
   showEditModal = false;
+  showNotificationsModal = false;
   createdAdminName = '';
   selectedAdmin: Admin | null = null;
 
-  admins: Admin[] = [
-    {
-      id: 1,
-      nom: 'Diallo',
-      prenom: 'Amadou',
-      role: 'Admin',
-      avatar: 'assets/pp.png',
-      email: 'amadou.diallo@repartir.com',
-      bloque: false
-    },
-    {
-      id: 2,
-      nom: 'Diallo',
-      prenom: 'Booba',
-      role: 'Admin',
-      avatar: 'assets/pp.png',
-      email: 'booba.diallo@repartir.com',
-      bloque: true
-    },
-    {
-      id: 3,
-      nom: 'Diawara',
-      prenom: 'Fatoumata',
-      role: 'Admin',
-      avatar: 'assets/pp.png',
-      email: 'fatoumata.diawara@repartir.com',
-      bloque: false
-    },
-    {
-      id: 4,
-      nom: 'Diallo',
-      prenom: 'Ramarta',
-      role: 'Admin',
-      avatar: 'assets/pp.png',
-      email: 'ramarta.diallo@repartir.com',
-      bloque: false
-    },
-    {
-      id: 5,
-      nom: 'Diallo',
-      prenom: 'Bakary',
-      role: 'Admin',
-      avatar: 'assets/pp.png',
-      email: 'bakary.diallo@repartir.com',
-      bloque: true
-    },
-    {
-      id: 6,
-      nom: 'Traoré',
-      prenom: 'Aminata',
-      role: 'Admin',
-      avatar: 'assets/pp.png',
-      email: 'aminata.traore@repartir.com',
-      bloque: false
-    }
-  ];
+  admins: Admin[] = [];
 
-  constructor(private router: Router) {}
+  notifications: Notification[] = [];
+  currentUserName = '';
+
+  constructor(
+    private router: Router,
+    private adminsService: AdminsService,
+    private notificationsService: NotificationsService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadAdmins();
+    this.loadCurrentUserName();
+  }
+
+  private loadAdmins(): void {
+    // Vérifier que le token existe
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      console.error('Aucun token d\'accès trouvé');
+      alert('Vous n\'êtes pas connecté. Redirection vers la page de connexion...');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    console.log('Chargement des admins...');
+    this.adminsService.listAdmins().subscribe({
+      next: (res: any) => {
+        console.log('Réponse brute du backend:', res);
+        
+        // Gérer différents types de réponses
+        let adminList: any[] = [];
+        if (Array.isArray(res)) {
+          adminList = res;
+        } else if (res && typeof res === 'object') {
+          // Peut-être une réponse avec une propriété "data" ou "admins"
+          adminList = res.data || res.admins || res.content || [];
+        }
+        
+        console.log('Liste d\'admins extraite:', adminList);
+        
+        this.admins = (adminList || []).map((a: any) => {
+          // Gérer différents formats de nom
+          let prenom = '';
+          let nom = '';
+          
+          if (a.prenom && a.nom) {
+            prenom = a.prenom;
+            nom = a.nom;
+          } else if (a.nomComplet) {
+            const parts = a.nomComplet.split(' ');
+            prenom = parts[0] || '';
+            nom = parts.slice(1).join(' ') || '';
+          } else if (a.nom) {
+            nom = a.nom;
+          }
+          
+          return {
+            id: a.id || 0,
+            nom: nom,
+            prenom: prenom,
+            role: a.role || 'Admin',
+      avatar: 'assets/pp.png',
+            email: a.email || '',
+            bloque: a.bloque || a.estActive === false || false
+          };
+        });
+        
+        console.log('Admins mappés pour l\'affichage:', this.admins);
+      },
+      error: (err) => {
+        console.error('Erreur chargement admins - Détails complets:', {
+          status: err.status,
+          statusText: err.statusText,
+          message: err.message,
+          error: err.error,
+          url: err.url,
+          headers: err.headers
+        });
+        
+        // Afficher le message d'erreur du backend si disponible
+        let errorMsg = 'Erreur inconnue';
+        if (err.error) {
+          if (typeof err.error === 'string') {
+            errorMsg = err.error;
+          } else if (err.error.message) {
+            errorMsg = err.error.message;
+          } else if (err.error.error) {
+            errorMsg = err.error.error;
+          }
+        } else if (err.message) {
+          errorMsg = err.message;
+        }
+        
+        if (err.status === 401 || err.status === 403) {
+          alert('Erreur d\'authentification. Veuillez vous reconnecter.');
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          this.router.navigate(['/login']);
+        } else if (err.status === 400) {
+          console.error('Erreur 400 - Problème de sérialisation côté backend');
+          console.error('Le backend essaie de sérialiser l\'entité Admin avec la collection notifications (lazy loading)');
+          console.error('Solution: Le backend doit retourner un DTO ou utiliser @JsonIgnore sur notifications');
+          console.error('Message d\'erreur backend:', errorMsg);
+          
+          // Message plus clair pour l'utilisateur
+          if (errorMsg.includes('lazily initialize') || errorMsg.includes('notifications')) {
+            alert(`Erreur backend (400): Problème de sérialisation des données.\n\n` +
+                  `Le backend doit corriger l'endpoint /administrateurs/lister pour retourner un DTO ` +
+                  `ou ignorer la propriété 'notifications'.\n\n` +
+                  `Message technique: ${errorMsg}`);
+          } else {
+            alert(`Erreur de requête (400): ${errorMsg}\n\nVérifiez la console (F12) pour plus de détails.`);
+          }
+        } else {
+          alert(`Erreur lors du chargement des admins (${err.status}): ${errorMsg}`);
+        }
+        
+        // Mettre une liste vide pour éviter les erreurs d'affichage
+        this.admins = [];
+      }
+    });
+  }
+
+  private loadCurrentUserName(): void {
+    const email = localStorage.getItem('auth_email') || '';
+    const cached = localStorage.getItem('auth_name');
+    const cachedEmail = localStorage.getItem('auth_name_email');
+    if (cached && cachedEmail && cachedEmail.toLowerCase() === email.toLowerCase()) {
+      this.currentUserName = cached;
+      return;
+    }
+    if (!email) {
+      this.currentUserName = '';
+      return;
+    }
+    this.adminsService.listAdmins().subscribe({
+      next: (admins: any[]) => {
+        const me = (admins || []).find(a => (a?.email || '').toLowerCase() === email.toLowerCase());
+        const name = me ? `${me.prenom || ''} ${me.nom || ''}`.trim() : email;
+        this.currentUserName = name;
+        localStorage.setItem('auth_name', name);
+        localStorage.setItem('auth_name_email', email);
+      },
+      error: () => {
+        this.currentUserName = email;
+      }
+    });
+  }
+
+  // Notifications
+  openNotificationsModal(): void {
+    this.showNotificationsModal = true;
+    this.loadNotifications();
+  }
+
+  closeNotificationsModal(): void {
+    this.showNotificationsModal = false;
+  }
+
+  onNotificationRead(notificationId: number): void {
+    this.notificationsService.marquerCommeLue(notificationId).subscribe({
+      next: () => {
+        const n = this.notifications.find(x => x.id === notificationId);
+        if (n) { n.lu = true; }
+      },
+      error: (err) => console.error('Erreur marquage notif comme lue', err)
+    });
+  }
+
+  getUnreadNotificationsCount(): number {
+    return this.notifications.filter(n => !n.lu).length;
+  }
+
+  private loadNotifications(): void {
+    this.notificationsService.getNonLues().subscribe({
+      next: (res) => {
+        if (res && Array.isArray(res)) {
+          this.notifications = res.map(r => ({
+            id: r.id || 0,
+            type: 'centre',
+            message: r.message || '',
+            date: r.dateCreation ? new Date(r.dateCreation) : new Date(),
+            lu: r.lue === true
+          }));
+        }
+      },
+      error: (err) => {
+        console.error('Erreur chargement notifications', err);
+        this.notifications = [];
+      }
+    });
+  }
 
   openAddAdminModal(): void {
     this.showAdminModal = true;
@@ -97,9 +237,24 @@ export class ListeAdminComponent {
   }
 
   onAdminCreated(adminData: any): void {
-    console.log('Admin créé:', adminData);
-    this.createdAdminName = `${adminData.prenom} ${adminData.nom}`;
+    const payload = {
+      prenom: adminData.prenom,
+      nom: adminData.nom,
+      email: adminData.email,
+      motDePasse: adminData.password
+    };
+    this.adminsService.createAdmin(payload).subscribe({
+      next: (res) => {
+        this.createdAdminName = `${res.prenom} ${res.nom}`;
+        this.showAdminModal = false;
     this.showConfirmationModal = true;
+        this.loadAdmins();
+      },
+      error: (err) => {
+        console.error('Erreur création admin', err);
+        alert('Erreur lors de la création de l\'admin : ' + (err.error || err.message || 'Erreur inconnue'));
+      }
+    });
   }
 
   closeConfirmationModal(): void {
@@ -126,11 +281,23 @@ export class ListeAdminComponent {
   }
 
   onAdminUpdated(updatedData: any): void {
-    const index = this.admins.findIndex(a => a.id === updatedData.id);
-    if (index > -1) {
-      this.admins[index] = { ...this.admins[index], ...updatedData };
-      console.log(`Admin ${updatedData.nom} mis à jour`);
-    }
+    if (!updatedData?.id) { return; }
+    this.adminsService.updateAdmin(updatedData.id, {
+      prenom: updatedData.prenom,
+      nom: updatedData.nom,
+      email: updatedData.email,
+      motDePasse: updatedData.motDePasse
+    }).subscribe({
+      next: () => {
+        this.showEditModal = false;
+        this.selectedAdmin = null;
+        this.loadAdmins();
+      },
+      error: (err) => {
+        console.error('Erreur mise à jour admin', err);
+        alert('Échec de la mise à jour de l\'admin');
+      }
+    });
   }
 
   logout(): void {

@@ -47,8 +47,11 @@
       </div>
 
       <!-- Login Button -->
-      <button type="submit" class="login-btn">
-        Se connecter
+      <div *ngIf="errorMessage" class="error-text" style="color:#d9534f;margin-bottom:8px;">
+        {{ errorMessage }}
+      </div>
+      <button type="submit" class="login-btn" [disabled]="loading">
+        {{ loading ? 'Connexion...' : 'Se connecter' }}
       </button>
     </form>
   </div>

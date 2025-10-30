@@ -53,12 +53,12 @@
         <!-- Bouton toggle pour mobile si nécessaire -->
       </div>
       <div class="header-right">
-        <div class="notifications">
+        <div class="notifications" (click)="openNotificationsModal()">
           <i class="fas fa-bell"></i>
-          <span class="notification-badge">3</span>
+          <span class="notification-badge" *ngIf="getUnreadNotificationsCount() > 0">{{ getUnreadNotificationsCount() }}</span>
         </div>
         <div class="user-info">
-          <span class="user-name">Bakary Diallo</span>
+          <span class="user-name">{{ currentUserName }}</span>
         </div>
         <div class="user-avatar">
           <img src="assets/pp.png" alt="Profile">
@@ -68,10 +68,12 @@
 
     <!-- Contenu des statistiques -->
     <div class="statistics-content">
+      <div *ngIf="loading" style="text-align: center; padding: 40px;">Chargement des statistiques...</div>
       <!-- Graphique en barres - Inscriptions mensuelles -->
+      <div *ngIf="!loading">
       <div class="chart-container">
         <div class="chart-card">
-          <h2 class="chart-title">Inscriptions mensuelles</h2>
+          <h2 class="chart-title">Inscriptions mensuelles ({{ year }})</h2>
           <div class="bar-chart">
             <div class="chart-area">
               <!-- Axe Y -->
@@ -103,10 +105,18 @@
           </div>
         </div>
       </div>
-
+      </div>
     </div>
   </main>
 </div>
+
+<!-- Notifications Modal -->
+<app-notifications-modal
+  *ngIf="showNotificationsModal"
+  [notifications]="notifications"
+  (modalClosed)="closeNotificationsModal()"
+  (notificationRead)="onNotificationRead($event)">
+</app-notifications-modal>
 
 <!-- Tooltip -->
 <div

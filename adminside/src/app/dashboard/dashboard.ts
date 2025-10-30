@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AdminModalComponent } from '../components/admin-modal/admin-modal';
@@ -8,6 +8,10 @@ import { DomainsListModalComponent, Domain } from '../components/domains-list-mo
 import { EditDomainModalComponent } from '../components/edit-domain-modal/edit-domain-modal';
 import { DeleteDomainModalComponent } from '../components/delete-domain-modal/delete-domain-modal';
 import { NotificationsModalComponent, Notification } from '../components/notifications-modal/notifications-modal';
+import { AdminsService } from '../services/admins.service';
+import { DomainsService } from '../services/domains.service';
+import { StatisticsService } from '../services/statistics.service';
+import { NotificationsService } from '../services/notifications.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,7 +20,7 @@ import { NotificationsModalComponent, Notification } from '../components/notific
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   showAdminModal = false;
   showConfirmationModal = false;
   showDomainModal = false;
@@ -28,50 +32,61 @@ export class DashboardComponent {
   domains: Domain[] = [];
   selectedDomain: Domain | null = null;
   notifications: Notification[] = [];
+  centresCount = 0;
+  blockedCount = 0;
+  pendingCount = 0;
+  activeAdminsCount = 0;
+  currentUserName = '';
 
-  constructor(private router: Router) {
-    // Initialiser avec moins de domaines d'exemple pour optimiser
-    this.domains = [
-      {
-        id: 1,
-        libelle: 'Informatique',
-        dateCreation: new Date('2024-01-15')
-      },
-      {
-        id: 2,
-        libelle: 'Marketing',
-        dateCreation: new Date('2024-01-20')
-      }
-    ];
+  constructor(
+    private router: Router,
+    private adminsService: AdminsService,
+    private domainsService: DomainsService,
+    private statisticsService: StatisticsService,
+    private notificationsService: NotificationsService
+  ) {}
 
-    // Initialiser les notifications d'exemple
-    this.notifications = [
-      {
-        id: 1,
-        type: 'centre',
-        message: 'Un nouveau centre de formation "Tech Academy Marseille" a créé son compte',
-        date: new Date(),
-        lu: false
-      },
-      {
-        id: 2,
-        type: 'entreprise',
-        message: 'Une nouvelle entreprise "Digital Innovations" a créé son compte',
-        date: new Date(Date.now() - 3600000),
-        lu: false
-      },
-      {
-        id: 3,
-        type: 'jeune',
-        message: 'Le jeune "Marie Dubois" a créé son compte',
-        date: new Date(Date.now() - 7200000),
-        lu: true
-      }
-    ];
+  ngOnInit(): void {
+    this.loadDomains();
+    this.loadStats();
+    // Charger les notifications de manière non-bloquante (ne bloque pas si endpoint n'existe pas)
+    try {
+      this.loadNotifications();
+    } catch (error) {
+      console.warn('Impossible de charger les notifications', error);
+      this.notifications = [];
+    }
+    this.loadCurrentUserName();
   }
 
   addAdmin(): void {
     this.showAdminModal = true;
+  }
+
+  private loadCurrentUserName(): void {
+    const email = localStorage.getItem('auth_email') || '';
+    const cached = localStorage.getItem('auth_name');
+    const cachedEmail = localStorage.getItem('auth_name_email');
+    if (cached && cachedEmail && cachedEmail.toLowerCase() === email.toLowerCase()) {
+      this.currentUserName = cached;
+      return;
+    }
+    if (!email) {
+      this.currentUserName = '';
+      return;
+    }
+    this.adminsService.listAdmins().subscribe({
+      next: (admins: any[]) => {
+        const me = (admins || []).find(a => (a?.email || '').toLowerCase() === email.toLowerCase());
+        const name = me ? `${me.prenom || ''} ${me.nom || ''}`.trim() : email;
+        this.currentUserName = name;
+        localStorage.setItem('auth_name', name);
+        localStorage.setItem('auth_name_email', email);
+      },
+      error: () => {
+        this.currentUserName = email;
+      }
+    });
   }
 
   closeAdminModal(): void {
@@ -79,9 +94,23 @@ export class DashboardComponent {
   }
 
   onAdminCreated(adminData: any): void {
-    console.log('Admin créé:', adminData);
-    this.createdAdminName = `${adminData.prenom} ${adminData.nom}`;
+    const payload = {
+      prenom: adminData.prenom,
+      nom: adminData.nom,
+      email: adminData.email,
+      motDePasse: adminData.password
+    };
+    this.adminsService.createAdmin(payload).subscribe({
+      next: (res) => {
+        this.createdAdminName = `${res.prenom} ${res.nom}`;
+        this.showAdminModal = false;
     this.showConfirmationModal = true;
+      },
+      error: (err) => {
+        console.error('Erreur création admin', err);
+        alert('Erreur lors de la création de l\'admin : ' + (err.error || err.message || 'Erreur inconnue'));
+      }
+    });
   }
 
   closeConfirmationModal(): void {
@@ -96,20 +125,30 @@ export class DashboardComponent {
 
   closeDomainModal(): void {
     this.showDomainModal = false;
+    // Réinitialiser le formulaire si nécessaire
   }
 
   onDomainCreated(domainData: {libelle: string}): void {
-    const newDomain: Domain = {
-      id: this.domains.length + 1,
-      libelle: domainData.libelle,
-      dateCreation: new Date()
-    };
-    this.domains.push(newDomain);
-    console.log('Domaine créé:', newDomain);
+    this.domainsService.create({ libelle: domainData.libelle }).subscribe({
+      next: (res) => {
+        console.log('Domaine créé avec succès:', res);
+        this.showDomainModal = false;
+        // Petit délai pour s'assurer que le modal se ferme avant de recharger
+        setTimeout(() => {
+          this.loadDomains(); // Recharger la liste depuis l'API
+        }, 100);
+      },
+      error: (err) => {
+        console.error('Erreur création domaine', err);
+        const errorMsg = err.error?.message || err.message || err.error || 'Erreur inconnue';
+        alert('Erreur lors de la création du domaine : ' + errorMsg);
+      }
+    });
   }
 
   viewDomains(): void {
     this.showDomainsListModal = true;
+    this.loadDomains();
   }
 
   closeDomainsListModal(): void {
@@ -129,11 +168,17 @@ export class DashboardComponent {
   }
 
   onDomainUpdated(domainData: {id: number, libelle: string}): void {
-    const domainIndex = this.domains.findIndex(d => d.id === domainData.id);
-    if (domainIndex !== -1) {
-      this.domains[domainIndex].libelle = domainData.libelle;
-      console.log('Domaine mis à jour:', this.domains[domainIndex]);
+    this.domainsService.update(domainData.id, { libelle: domainData.libelle }).subscribe({
+      next: (res) => {
+        this.showEditDomainModal = false;
+        this.selectedDomain = null;
+        this.loadDomains();
+      },
+      error: (err) => {
+        console.error('Erreur mise à jour domaine', err);
+        alert('Échec de la mise à jour du domaine');
     }
+    });
   }
 
   // Méthodes pour la suppression des domaines
@@ -149,13 +194,65 @@ export class DashboardComponent {
   }
 
   confirmDomainDeletion(): void {
-    if (this.selectedDomain) {
-      const domainIndex = this.domains.findIndex(d => d.id === this.selectedDomain!.id);
-      if (domainIndex !== -1) {
-        const deletedDomain = this.domains.splice(domainIndex, 1)[0];
-        console.log('Domaine supprimé:', deletedDomain);
+    if (!this.selectedDomain) { return; }
+    const id = this.selectedDomain.id;
+    this.domainsService.delete(id).subscribe({
+      next: () => {
+        this.showDeleteDomainModal = false;
+        this.selectedDomain = null;
+        this.loadDomains();
+      },
+      error: (err) => {
+        console.error('Erreur suppression domaine', err);
+        alert('Échec de la suppression du domaine');
       }
+    });
+  }
+
+  private loadDomains(): void {
+    this.domainsService.list().subscribe({
+      next: (res) => {
+        this.domains = res.map(d => ({ id: d.id, libelle: d.libelle, dateCreation: new Date() }));
+      },
+      error: (err) => console.error('Erreur chargement domaines', err)
+    });
+  }
+
+  private loadStats(): void {
+    this.statisticsService.getDashboard().subscribe({
+      next: (stats) => {
+        this.centresCount = stats.centresCount;
+        this.blockedCount = stats.blockedAccountsCount;
+        this.pendingCount = stats.pendingAccountsCount;
+        this.activeAdminsCount = stats.activeAdminsCount;
+      },
+      error: (err) => {
+        console.error('Erreur chargement stats', err);
+        // Fallback sur les anciennes méthodes si le endpoint n'existe pas encore
+        this.loadStatsFallback();
+      }
+    });
+  }
+
+  private loadStatsFallback(): void {
+    // Fallback si l'endpoint de stats n'existe pas encore
+    this.adminsService.listAdmins().subscribe({
+      next: (admins) => {
+        this.activeAdminsCount = Array.isArray(admins) ? admins.length : 0;
+      },
+      error: () => {
+        this.activeAdminsCount = 0;
+      }
+    });
+
+    this.adminsService.listPendingAccounts().subscribe({
+      next: (pending) => {
+        this.pendingCount = Array.isArray(pending) ? pending.length : 0;
+      },
+      error: () => {
+        this.pendingCount = 0;
     }
+    });
   }
 
   viewAllActivities(): void {
@@ -165,6 +262,7 @@ export class DashboardComponent {
   // Méthodes pour les notifications
   openNotificationsModal(): void {
     this.showNotificationsModal = true;
+    this.loadNotifications();
   }
 
   closeNotificationsModal(): void {
@@ -172,11 +270,15 @@ export class DashboardComponent {
   }
 
   onNotificationRead(notificationId: number): void {
+    this.notificationsService.marquerCommeLue(notificationId).subscribe({
+      next: () => {
     const notification = this.notifications.find(n => n.id === notificationId);
     if (notification) {
       notification.lu = true;
-      console.log('Notification marquée comme lue:', notificationId);
     }
+      },
+      error: (err) => console.error('Erreur marquage notif comme lue', err)
+    });
   }
 
   getUnreadNotificationsCount(): number {
@@ -185,5 +287,52 @@ export class DashboardComponent {
 
   logout(): void {
     this.router.navigate(['/login']);
+  }
+
+  private loadNotifications(): void {
+    // Ne charger les notifications que si le service est disponible
+    if (!this.notificationsService) {
+      console.warn('NotificationsService non disponible');
+      this.notifications = [];
+      return;
+    }
+
+    this.notificationsService.getNonLues().subscribe({
+      next: (res) => {
+        if (res && Array.isArray(res)) {
+          this.notifications = res.map(r => {
+            // Détecter le type selon le message
+            let type: 'centre' | 'entreprise' | 'jeune' | 'parrain' | 'mentor' = 'centre';
+            if (r.message) {
+              const msg = r.message.toLowerCase();
+              if (msg.includes('entreprise')) {
+                type = 'entreprise';
+              } else if (msg.includes('centre')) {
+                type = 'centre';
+              } else if (msg.includes('jeune')) {
+                type = 'jeune';
+              } else if (msg.includes('parrain')) {
+                type = 'parrain';
+              } else if (msg.includes('mentor')) {
+                type = 'mentor';
+              }
+            }
+
+            return {
+              id: r.id || 0,
+              type: type,
+              message: r.message || '',
+              date: r.dateCreation ? new Date(r.dateCreation) : new Date(),
+              lu: r.lue === true
+            };
+          });
+        }
+      },
+      error: (err) => {
+        console.error('Erreur chargement notifications', err);
+        // Ne pas bloquer l'application si l'endpoint n'existe pas encore
+        this.notifications = [];
+      }
+    });
   }
 }
