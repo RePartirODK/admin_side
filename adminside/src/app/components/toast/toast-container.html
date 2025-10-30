@@ -1,0 +1,16 @@
+<div class="toast-container">
+  <div 
+    class="toast" 
+    *ngFor="let t of toasts" 
+    [ngClass]="{
+      'toast-success': t.type === 'success',
+      'toast-error': t.type === 'error',
+      'toast-info': t.type === 'info',
+      'toast-warning': t.type === 'warning'
+    }">
+    <span class="toast-message">{{ t.message }}</span>
+    <button class="toast-close" (click)="close(t.id)">×</button>
+  </div>
+</div>
+
+

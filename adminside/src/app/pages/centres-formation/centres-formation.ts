@@ -8,6 +8,8 @@ import { EntreprisesService } from '../../services/entreprises.service';
 import { JeunesService } from '../../services/jeunes.service';
 import { AdminsService } from '../../services/admins.service';
 import { NotificationsModalComponent, Notification } from '../../components/notifications-modal/notifications-modal';
+import { ToastContainerComponent } from '../../components/toast/toast-container';
+import { ToastService } from '../../services/toast.service';
 import { NotificationsService } from '../../services/notifications.service';
 import { ResponseCentre } from '../../models/centre-formation.model';
 import { MentorResponseDto } from '../../models/mentor.model';
@@ -29,7 +31,7 @@ interface UserDisplay {
 @Component({
   selector: 'app-centres-formation',
   standalone: true,
-  imports: [CommonModule, NotificationsModalComponent],
+  imports: [CommonModule, NotificationsModalComponent, ToastContainerComponent],
   templateUrl: './centres-formation.html',
   styleUrl: './centres-formation.css'
 })
@@ -57,7 +59,8 @@ export class CentresFormationComponent implements OnInit {
     private entreprisesService: EntreprisesService,
     private jeunesService: JeunesService,
     private adminsService: AdminsService,
-    private notificationsService: NotificationsService
+    private notificationsService: NotificationsService,
+    private toast: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -499,9 +502,6 @@ export class CentresFormationComponent implements OnInit {
 
   // Actions pour les centres de formation
   accepterCentre(centre: UserDisplay): void {
-    if (!confirm(`Êtes-vous sûr de vouloir accepter le centre "${centre.nom}" ?`)) {
-      return;
-    }
     
     this.adminsService.approveUser(centre.userId).subscribe({
       next: (response) => {
@@ -516,7 +516,7 @@ export class CentresFormationComponent implements OnInit {
           this.centres[centreIndex].statut = 'Actif';
           this.centres[centreIndex].etat = 'Actif';
         }
-        alert(`Le centre "${centre.nom}" a été accepté avec succès.`);
+        this.toast.success(`Le centre "${centre.nom}" a été accepté avec succès.`);
         
         // Recharger les données depuis le backend pour synchroniser (délai plus long pour laisser le backend commit la transaction)
         setTimeout(() => {
@@ -537,7 +537,7 @@ export class CentresFormationComponent implements OnInit {
         
         // Gérer les erreurs d'authentification
         if (err.status === 401 || err.status === 403) {
-          alert('Votre session a expiré. Veuillez vous reconnecter.');
+          this.toast.error('Votre session a expiré. Veuillez vous reconnecter.');
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
           this.router.navigate(['/login']);
@@ -546,20 +546,17 @@ export class CentresFormationComponent implements OnInit {
         
         // Vérifier si l'endpoint existe
         if (err.status === 404) {
-          alert('Erreur 404: L\'endpoint /administrateurs/valider-compte n\'existe pas côté backend. Vérifiez que l\'endpoint est bien créé.');
+          this.toast.error('Erreur 404: endpoint /administrateurs/valider-compte introuvable côté backend.');
           return;
         }
         
         const errorMessage = err.error?.message || err.message || err.statusText || 'Erreur inconnue';
-        alert(`Erreur lors de l'acceptation du centre (${err.status}): ${errorMessage}\n\nVérifiez la console (F12) pour plus de détails.`);
+        this.toast.error(`Erreur acceptation centre (${err.status}): ${errorMessage}`);
       }
     });
   }
 
   refuserCentre(centre: UserDisplay): void {
-    if (!confirm(`Êtes-vous sûr de vouloir refuser le centre "${centre.nom}" ? Cette action est irréversible.`)) {
-      return;
-    }
     
     this.adminsService.refuseUser(centre.userId).subscribe({
       next: (response) => {
@@ -570,7 +567,7 @@ export class CentresFormationComponent implements OnInit {
           this.centres[centreIndex].statut = 'Refusé';
           this.centres[centreIndex].etat = 'Bloqué';
         }
-        alert(`Le centre "${centre.nom}" a été refusé.`);
+        this.toast.info(`Le centre "${centre.nom}" a été refusé.`);
         // Recharger les données depuis le backend pour synchroniser (délai pour laisser le backend sauvegarder)
         setTimeout(() => {
           this.loadCentres();
@@ -590,16 +587,13 @@ export class CentresFormationComponent implements OnInit {
   }
 
   bloquerCentre(centre: UserDisplay): void {
-    if (!confirm(`Êtes-vous sûr de vouloir bloquer le centre "${centre.nom}" ?`)) {
-      return;
-    }
     
     this.adminsService.blockUser(centre.userId).subscribe({
       next: (response) => {
         console.log('Centre bloqué avec succès, réponse API:', response);
         setTimeout(() => {
           this.loadCentres();
-          alert(`Le centre "${centre.nom}" a été bloqué avec succès.`);
+          this.toast.warning(`Le centre "${centre.nom}" a été bloqué avec succès.`);
         }, 500);
       },
       error: (err) => {
@@ -621,7 +615,7 @@ export class CentresFormationComponent implements OnInit {
         console.log('Centre débloqué avec succès, réponse API:', response);
         setTimeout(() => {
           this.loadCentres();
-          alert(`Le centre "${centre.nom}" a été débloqué avec succès.`);
+          this.toast.success(`Le centre "${centre.nom}" a été débloqué avec succès.`);
         }, 500);
       },
       error: (err) => {
@@ -639,9 +633,6 @@ export class CentresFormationComponent implements OnInit {
 
   // Actions pour les entreprises
   accepterEntreprise(entreprise: UserDisplay): void {
-    if (!confirm(`Êtes-vous sûr de vouloir accepter l'entreprise "${entreprise.nom}" ?`)) {
-      return;
-    }
     
     this.adminsService.approveUser(entreprise.userId).subscribe({
       next: (response) => {
@@ -656,7 +647,7 @@ export class CentresFormationComponent implements OnInit {
           this.entreprises[entrepriseIndex].statut = 'Actif';
           this.entreprises[entrepriseIndex].etat = 'Actif';
         }
-        alert(`L'entreprise "${entreprise.nom}" a été acceptée avec succès.`);
+        this.toast.success(`L'entreprise "${entreprise.nom}" a été acceptée avec succès.`);
         
         // Recharger les données depuis le backend pour synchroniser (délai plus long pour laisser le backend commit la transaction)
         setTimeout(() => {
@@ -667,15 +658,12 @@ export class CentresFormationComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erreur validation entreprise', err);
-        alert('Erreur lors de l\'acceptation de l\'entreprise: ' + (err.error?.message || err.message || 'Erreur inconnue'));
+        this.toast.error('Erreur lors de l\'acceptation de l\'entreprise: ' + (err.error?.message || err.message || 'Erreur inconnue'));
       }
     });
   }
 
   refuserEntreprise(entreprise: UserDisplay): void {
-    if (!confirm(`Êtes-vous sûr de vouloir refuser l'entreprise "${entreprise.nom}" ? Cette action est irréversible.`)) {
-      return;
-    }
     
     this.adminsService.refuseUser(entreprise.userId).subscribe({
       next: (response) => {
@@ -686,7 +674,7 @@ export class CentresFormationComponent implements OnInit {
           this.entreprises[entrepriseIndex].statut = 'Refusé';
           this.entreprises[entrepriseIndex].etat = 'Bloqué';
         }
-        alert(`L'entreprise "${entreprise.nom}" a été refusée.`);
+        this.toast.info(`L'entreprise "${entreprise.nom}" a été refusée.`);
         // Recharger les données depuis le backend pour synchroniser (délai pour laisser le backend sauvegarder)
         setTimeout(() => {
           this.loadEntreprises();
@@ -694,27 +682,24 @@ export class CentresFormationComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erreur refus entreprise', err);
-        alert('Erreur lors du refus de l\'entreprise: ' + (err.error?.message || err.message || 'Erreur inconnue'));
+        this.toast.error('Erreur lors du refus de l\'entreprise: ' + (err.error?.message || err.message || 'Erreur inconnue'));
       }
     });
   }
 
   bloquerEntreprise(entreprise: UserDisplay): void {
-    if (!confirm(`Êtes-vous sûr de vouloir bloquer l'entreprise "${entreprise.nom}" ?`)) {
-      return;
-    }
     
     this.adminsService.blockUser(entreprise.userId).subscribe({
       next: (response) => {
         console.log('Entreprise bloquée avec succès, réponse API:', response);
         setTimeout(() => {
           this.loadEntreprises();
-          alert(`L'entreprise "${entreprise.nom}" a été bloquée avec succès.`);
+          this.toast.warning(`L'entreprise "${entreprise.nom}" a été bloquée avec succès.`);
         }, 500);
       },
       error: (err) => {
         console.error('Erreur blocage entreprise', err);
-        alert('Erreur lors du blocage de l\'entreprise: ' + (err.error?.message || err.message || 'Erreur inconnue'));
+        this.toast.error('Erreur lors du blocage de l\'entreprise: ' + (err.error?.message || err.message || 'Erreur inconnue'));
       }
     });
   }
@@ -725,31 +710,28 @@ export class CentresFormationComponent implements OnInit {
         console.log('Entreprise débloquée avec succès, réponse API:', response);
         setTimeout(() => {
           this.loadEntreprises();
-          alert(`L'entreprise "${entreprise.nom}" a été débloquée avec succès.`);
+          this.toast.success(`L'entreprise "${entreprise.nom}" a été débloquée avec succès.`);
         }, 500);
       },
       error: (err) => {
         console.error('Erreur déblocage entreprise', err);
-        alert('Erreur lors du déblocage de l\'entreprise: ' + (err.error?.message || err.message || 'Erreur inconnue'));
+        this.toast.error('Erreur lors du déblocage de l\'entreprise: ' + (err.error?.message || err.message || 'Erreur inconnue'));
       }
     });
   }
 
   // Actions pour les jeunes
   bloquerJeune(jeune: UserDisplay): void {
-    if (!confirm(`Êtes-vous sûr de vouloir bloquer le jeune "${jeune.nom}" ?`)) {
-      return;
-    }
     
     this.adminsService.blockUser(jeune.userId).subscribe({
       next: (response) => {
         console.log('Jeune bloqué avec succès:', response);
-        alert(`Le jeune "${jeune.nom}" a été bloqué avec succès.`);
+        this.toast.warning(`Le jeune "${jeune.nom}" a été bloqué avec succès.`);
         this.loadJeunes();
       },
       error: (err) => {
         console.error('Erreur blocage jeune', err);
-        alert('Erreur lors du blocage du jeune: ' + (err.error?.message || err.message || 'Erreur inconnue'));
+        this.toast.error('Erreur lors du blocage du jeune: ' + (err.error?.message || err.message || 'Erreur inconnue'));
       }
     });
   }
@@ -758,31 +740,28 @@ export class CentresFormationComponent implements OnInit {
     this.adminsService.unblockUser(jeune.userId).subscribe({
       next: (response) => {
         console.log('Jeune débloqué avec succès:', response);
-        alert(`Le jeune "${jeune.nom}" a été débloqué avec succès.`);
+        this.toast.success(`Le jeune "${jeune.nom}" a été débloqué avec succès.`);
         this.loadJeunes();
       },
       error: (err) => {
         console.error('Erreur déblocage jeune', err);
-        alert('Erreur lors du déblocage du jeune: ' + (err.error?.message || err.message || 'Erreur inconnue'));
+        this.toast.error('Erreur lors du déblocage du jeune: ' + (err.error?.message || err.message || 'Erreur inconnue'));
       }
     });
   }
 
   // Actions pour les parrains
   bloquerParrain(parrain: UserDisplay): void {
-    if (!confirm(`Êtes-vous sûr de vouloir bloquer le parrain "${parrain.nom}" ?`)) {
-      return;
-    }
     
     this.adminsService.blockUser(parrain.userId).subscribe({
       next: (response) => {
         console.log('Parrain bloqué avec succès:', response);
-        alert(`Le parrain "${parrain.nom}" a été bloqué avec succès.`);
+        this.toast.warning(`Le parrain "${parrain.nom}" a été bloqué avec succès.`);
         this.loadParrains();
       },
       error: (err) => {
         console.error('Erreur blocage parrain', err);
-        alert('Erreur lors du blocage du parrain: ' + (err.error?.message || err.message || 'Erreur inconnue'));
+        this.toast.error('Erreur lors du blocage du parrain: ' + (err.error?.message || err.message || 'Erreur inconnue'));
       }
     });
   }
@@ -791,31 +770,28 @@ export class CentresFormationComponent implements OnInit {
     this.adminsService.unblockUser(parrain.userId).subscribe({
       next: (response) => {
         console.log('Parrain débloqué avec succès:', response);
-        alert(`Le parrain "${parrain.nom}" a été débloqué avec succès.`);
+        this.toast.success(`Le parrain "${parrain.nom}" a été débloqué avec succès.`);
         this.loadParrains();
       },
       error: (err) => {
         console.error('Erreur déblocage parrain', err);
-        alert('Erreur lors du déblocage du parrain: ' + (err.error?.message || err.message || 'Erreur inconnue'));
+        this.toast.error('Erreur lors du déblocage du parrain: ' + (err.error?.message || err.message || 'Erreur inconnue'));
       }
     });
   }
 
   // Actions pour les mentors
   bloquerMentor(mentor: UserDisplay): void {
-    if (!confirm(`Êtes-vous sûr de vouloir bloquer le mentor "${mentor.nom}" ?`)) {
-      return;
-    }
     
     this.adminsService.blockUser(mentor.userId).subscribe({
       next: (response) => {
         console.log('Mentor bloqué avec succès:', response);
-        alert(`Le mentor "${mentor.nom}" a été bloqué avec succès.`);
+        this.toast.warning(`Le mentor "${mentor.nom}" a été bloqué avec succès.`);
         this.loadMentors();
       },
       error: (err) => {
         console.error('Erreur blocage mentor', err);
-        alert('Erreur lors du blocage du mentor: ' + (err.error?.message || err.message || 'Erreur inconnue'));
+        this.toast.error('Erreur lors du blocage du mentor: ' + (err.error?.message || err.message || 'Erreur inconnue'));
       }
     });
   }
@@ -824,12 +800,12 @@ export class CentresFormationComponent implements OnInit {
     this.adminsService.unblockUser(mentor.userId).subscribe({
       next: (response) => {
         console.log('Mentor débloqué avec succès:', response);
-        alert(`Le mentor "${mentor.nom}" a été débloqué avec succès.`);
+        this.toast.success(`Le mentor "${mentor.nom}" a été débloqué avec succès.`);
         this.loadMentors();
       },
       error: (err) => {
         console.error('Erreur déblocage mentor', err);
-        alert('Erreur lors du déblocage du mentor: ' + (err.error?.message || err.message || 'Erreur inconnue'));
+        this.toast.error('Erreur lors du déblocage du mentor: ' + (err.error?.message || err.message || 'Erreur inconnue'));
       }
     });
   }
