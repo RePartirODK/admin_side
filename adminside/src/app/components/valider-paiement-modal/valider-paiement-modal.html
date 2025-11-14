@@ -1,0 +1,53 @@
+<div class="modal-overlay" (click)="closeModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">Valider le paiement</h2>
+      <button class="close-btn" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body" *ngIf="paiement">
+      <div class="info-message">
+        <i class="fas fa-info-circle"></i>
+        <p>Êtes-vous sûr de vouloir valider ce paiement ? Un reçu sera envoyé au jeune par email.</p>
+      </div>
+
+      <div class="paiement-details">
+        <div class="detail-row">
+          <span class="detail-label">Référence:</span>
+          <span class="detail-value">{{ paiement.reference }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Jeune:</span>
+          <span class="detail-value">{{ paiement.jeune.prenom }} {{ paiement.jeune.nom }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Formation:</span>
+          <span class="detail-value">{{ paiement.formation.titre }}</span>
+        </div>
+        <div class="detail-row" *ngIf="paiement.formation.centre">
+          <span class="detail-label">Centre:</span>
+          <span class="detail-value">{{ paiement.formation.centre.nom }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Montant:</span>
+          <span class="detail-value">{{ paiement.montant }} FCFA</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Date:</span>
+          <span class="detail-value">{{ paiement.datePaiement | date:'dd/MM/yyyy' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModal()">Annuler</button>
+      <button class="btn-primary" (click)="confirmerValidation()">
+        <i class="fas fa-check"></i>
+        Valider le paiement
+      </button>
+    </div>
+  </div>
+</div>
+

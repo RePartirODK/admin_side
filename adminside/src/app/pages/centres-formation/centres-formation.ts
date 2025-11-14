@@ -24,6 +24,7 @@ interface UserDisplay {
   userId: number;
   nom: string;
   email: string;
+  agrement?: string;
   statut: 'Actif' | 'En attente' | 'Refusé';
   etat: 'Actif' | 'Bloqué';
 }
@@ -247,6 +248,7 @@ export class CentresFormationComponent implements OnInit {
             userId: c.utilisateur?.id || c.id,
             nom: c.nom || '—',
             email: c.email || '—',
+            agrement: c.agrement || '—',
             statut: statut,
             etat: etat
           };
@@ -362,6 +364,7 @@ export class CentresFormationComponent implements OnInit {
             userId: e.utilisateur?.id || e.id,
             nom: e.utilisateur?.nom || '—',
             email: e.utilisateur?.email || '—',
+            agrement: e.agrement || '—',
             statut: statut,
             etat: etat
           };
@@ -403,16 +406,16 @@ export class CentresFormationComponent implements OnInit {
               etat = 'Actif';
             }
           } else {
-            statut = j.utilisateur.estActive === true ? 'Actif' : 'En attente';
-            etat = j.utilisateur.estActive === true ? 'Actif' : 'Bloqué';
+            statut = j.utilisateur?.estActive === true ? 'Actif' : 'En attente';
+            etat = j.utilisateur?.estActive === true ? 'Actif' : 'Bloqué';
           }
           
           return {
-            id: j.utilisateur.id,
+            id: j.utilisateur?.id || j.id,
             entityId: j.id,
-            userId: j.utilisateur.id,
-            nom: j.utilisateur.nom || '—',
-            email: j.utilisateur.email || '—',
+            userId: j.utilisateur?.id || j.id,
+            nom: j.nom || j.utilisateur?.nom || '—',
+            email: j.email || j.utilisateur?.email || '—',
             statut: statut,
             etat: etat
           };

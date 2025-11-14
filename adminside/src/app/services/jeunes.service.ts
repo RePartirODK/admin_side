@@ -13,5 +13,9 @@ export class JeunesService {
   getAllJeunes(): Observable<Jeune[]> {
     return this.http.get<Jeune[]>(`${this.baseUrl}`);
   }
+
+  getJeuneById(id: number): Observable<Jeune> {
+    return this.http.get<Jeune>(`${this.baseUrl}/${id}`);
+  }
 }
 

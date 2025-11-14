@@ -4,6 +4,7 @@ import { DashboardComponent } from './dashboard/dashboard';
 import { CentresFormationComponent } from './pages/centres-formation/centres-formation';
 import { ListeAdminComponent } from './pages/liste-admin/liste-admin';
 import { StatistiquesComponent } from './pages/statistiques/statistiques';
+import { PaiementsComponent } from './pages/paiements/paiements';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -12,5 +13,6 @@ export const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
   { path: 'centres-formation', component: CentresFormationComponent, canActivate: [authGuard] },
   { path: 'liste-admin', component: ListeAdminComponent, canActivate: [authGuard] },
+  { path: 'paiements', component: PaiementsComponent, canActivate: [authGuard] },
   { path: 'statistiques', component: StatistiquesComponent, canActivate: [authGuard] }
 ];

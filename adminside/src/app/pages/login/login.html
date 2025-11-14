@@ -46,12 +46,16 @@
         </button>
       </div>
 
-      <!-- Login Button -->
-      <div *ngIf="errorMessage" class="error-text" style="color:#d9534f;margin-bottom:8px;">
-        {{ errorMessage }}
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="error-message">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>{{ errorMessage }}</span>
       </div>
+
+      <!-- Login Button -->
       <button type="submit" class="login-btn" [disabled]="loading">
-        {{ loading ? 'Connexion...' : 'Se connecter' }}
+        <span *ngIf="loading" class="spinner"></span>
+        <span>{{ loading ? 'Connexion en cours...' : 'Se connecter' }}</span>
       </button>
     </form>
   </div>
