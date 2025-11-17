@@ -1,4 +1,5 @@
 import { Jeune } from './jeune.model';
+import { ResponseParrain } from './parrain.model';
 
 export enum StatutPaiement {
   EN_ATTENTE = 'EN_ATTENTE',
@@ -23,6 +24,7 @@ export interface Paiement {
   statut: StatutPaiement;
   jeune: Jeune;
   formation: Formation;
+  parrain?: ResponseParrain;
   motifRefus?: string;
 }
 

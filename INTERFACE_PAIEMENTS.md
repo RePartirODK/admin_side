@@ -222,3 +222,4 @@ PUT  /api/paiements/refuser/{idPaiement}
 
 Interface admin moderne, intuitive et performante pour gérer efficacement les paiements des jeunes avec un excellent retour visuel et une UX soignée.
 
+

@@ -126,6 +126,7 @@
                 <th>Référence</th>
                 <th>Date</th>
                 <th>Jeune</th>
+                <th>Parrain</th>
                 <th>Formation</th>
                 <th>Centre</th>
                 <th>Montant</th>
@@ -139,7 +140,15 @@
                 <td>{{ paiement?.datePaiement | date:'dd/MM/yyyy' }}</td>
                 <td>
                   <div class="user-cell">
-                    <span class="user-name">{{ paiement?.jeune?.prenom || '' }} {{ paiement?.jeune?.nom || 'N/A' }}</span>
+                    <span class="user-name">{{ paiement?.jeune?.prenom || '' }}{{ paiement?.jeune?.prenom && paiement?.jeune?.nom ? ' ' : '' }}{{ paiement?.jeune?.nom || '' }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="parrain-cell">
+                    <span *ngIf="paiement?.parrain" class="parrain-name">
+                      {{ paiement?.parrain?.prenom || '' }}{{ paiement?.parrain?.prenom && paiement?.parrain?.nom ? ' ' : '' }}{{ paiement?.parrain?.nom || '' }}
+                    </span>
+                    <span *ngIf="!paiement?.parrain" class="non-parraine">Non parrainé</span>
                   </div>
                 </td>
                 <td>{{ paiement?.formation?.titre || 'N/A' }}</td>
@@ -169,7 +178,7 @@
                 </td>
               </tr>
               <tr *ngIf="paiementsFiltres.length === 0">
-                <td colspan="8" class="empty-state">
+                <td colspan="9" class="empty-state">
                   <div class="empty-content">
                     <i class="fas fa-inbox"></i>
                     <p>Aucun paiement trouvé</p>

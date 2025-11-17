@@ -12,6 +12,7 @@ import { NotificationsService } from '../../services/notifications.service';
 import { JeunesService } from '../../services/jeunes.service';
 import { FormationsService } from '../../services/formations.service';
 import { CentresService } from '../../services/centres.service';
+import { ParrainsService } from '../../services/parrains.service';
 
 @Component({
   selector: 'app-paiements',
@@ -55,7 +56,8 @@ export class PaiementsComponent implements OnInit {
     private notificationsService: NotificationsService,
     private jeunesService: JeunesService,
     private formationsService: FormationsService,
-    private centresService: CentresService
+    private centresService: CentresService,
+    private parrainsService: ParrainsService
   ) {}
 
   ngOnInit(): void {
@@ -79,22 +81,26 @@ export class PaiementsComponent implements OnInit {
       paiements: this.paiementsService.getAllPaiements(),
       jeunes: this.jeunesService.getAllJeunes(),
       formations: this.formationsService.getAllFormations(),
-      centres: this.centresService.getAll()
+      centres: this.centresService.getAll(),
+      parrains: this.parrainsService.getAllParrains()
     }).subscribe({
-      next: ({ paiements, jeunes, formations, centres }) => {
+      next: ({ paiements, jeunes, formations, centres, parrains }) => {
         console.log('Réponse brute du backend:', paiements);
         console.log('Jeunes chargés:', jeunes);
         console.log('Formations chargées:', formations);
         console.log('Centres chargés:', centres);
+        console.log('Parrains chargés:', parrains);
         
         // Afficher les IDs disponibles
         console.log('IDs des formations disponibles:', formations.map((f: any) => f.id));
         console.log('IDs des jeunes disponibles:', jeunes.map(j => j.id));
         console.log('IDs des centres disponibles:', centres.map((c: any) => c.id));
+        console.log('IDs des parrains disponibles:', parrains.map((p: any) => p.id));
         
         // Créer des maps pour accès rapide
         const jeunesMap = new Map(jeunes.map(j => [j.id, j]));
         const centresMap = new Map(centres.map((c: any) => [c.id, c]));
+        const parrainsMap = new Map(parrains.map((p: any) => [p.id, p]));
         
         // Enrichir les formations avec les centres
         const formationsEnrichies = formations.map((f: any) => {
@@ -110,9 +116,12 @@ export class PaiementsComponent implements OnInit {
         this.paiements = (paiements || []).map((p: any) => {
           const jeune = jeunesMap.get(p.idJeune);
           const formation = formationsMap.get(p.idFormation);
+          // Récupérer le parrain si idParrain est présent dans la réponse
+          const parrain = p.idParrain ? parrainsMap.get(p.idParrain) : undefined;
           
           console.log(`Paiement ${p.id} - Jeune trouvé:`, jeune);
           console.log(`Paiement ${p.id} - Formation trouvée:`, formation);
+          console.log(`Paiement ${p.id} - Parrain trouvé (id: ${p.idParrain}):`, parrain);
           
           // Si la formation n'existe pas, essayer de la récupérer depuis le backend
           if (!formation && p.idFormation) {
@@ -137,6 +146,7 @@ export class PaiementsComponent implements OnInit {
               titre: `Formation #${p.idFormation} (non trouvée)`,
               centre: { id: 0, nom: 'Centre inconnu' }
             },
+            parrain: parrain,
             motifRefus: p.motifRefus || ''
           };
         });

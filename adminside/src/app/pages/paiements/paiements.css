@@ -339,6 +339,22 @@
   font-weight: 500;
 }
 
+.parrain-cell {
+  display: flex;
+  align-items: center;
+}
+
+.parrain-name {
+  font-weight: 500;
+  color: #667eea;
+}
+
+.non-parraine {
+  font-style: italic;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
 .centre-cell {
   display: flex;
   align-items: center;
