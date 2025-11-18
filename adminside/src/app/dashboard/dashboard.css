@@ -1,15 +1,43 @@
 /* Dashboard Component Styles */
 
+/* Variables CSS pour le thème */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #ffffff;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+  --border-color: #e5e7eb;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --card-bg: #ffffff;
+}
+
+.dark-mode {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --bg-tertiary: #252525;
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --text-tertiary: #808080;
+  --border-color: #404040;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --card-bg: #2d2d2d;
+}
+
 /* Container principal */
 .admin-dashboard {
   display: flex;
   min-height: 100vh;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Sidebar */
 .sidebar {
   width: 250px;
-  background-color: var(--white);
+  background-color: var(--bg-primary);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -17,7 +45,8 @@
   left: 0;
   top: 0;
   z-index: 1000;
-  box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+  box-shadow: 2px 0 4px var(--shadow);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .logo-section {
@@ -53,7 +82,8 @@
   font-size: 16px;
   font-weight: bold;
   margin: 0;
-  color: var(--black);
+  color: var(--text-primary);
+  transition: color 0.3s ease;
 }
 
 .logo-re {
@@ -88,7 +118,7 @@
   display: flex;
   align-items: center;
   padding: 15px 20px;
-  color: #666;
+  color: var(--text-secondary);
   text-decoration: none;
   transition: all 0.3s ease;
 }
@@ -118,7 +148,8 @@
 /* Logout section */
 .logout-section {
   padding: 20px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border-color);
+  transition: border-color 0.3s ease;
 }
 
 .logout-link {
@@ -172,7 +203,36 @@
 .header-right {
   display: flex;
   align-items: center;
-  gap: 25px;
+  gap: 20px;
+}
+
+/* Theme toggle */
+.theme-toggle {
+  position: relative;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.theme-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.theme-toggle i {
+  transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover i {
+  transform: rotate(15deg);
 }
 
 /* Notifications */
@@ -241,7 +301,8 @@
 .dashboard-content {
   flex: 1;
   padding: 30px;
-  background-color: var(--light-gray);
+  background-color: var(--bg-secondary);
+  transition: background-color 0.3s ease;
 }
 
 /* Welcome and Actions container */
@@ -261,11 +322,12 @@
 .welcome-title {
   font-size: 24px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 5px;
   display: flex;
   align-items: center;
   gap: 10px;
+  transition: color 0.3s ease;
 }
 
 .welcome-emoji {
@@ -274,8 +336,9 @@
 
 .welcome-subtitle {
   font-size: 16px;
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 0;
+  transition: color 0.3s ease;
 }
 
 /* Main columns */
@@ -302,21 +365,23 @@
 
 /* Quick actions */
 .quick-actions-section {
-  background-color: white;
+  background-color: var(--card-bg);
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px var(--shadow);
   margin-bottom: 0;
   width: 400px;
   flex-shrink: 0;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .section-title {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 15px;
   text-align: center;
+  transition: color 0.3s ease;
 }
 
 .action-buttons {
@@ -326,9 +391,9 @@
 }
 
 .action-btn {
-  background-color: white;
-  color: #333;
-  border: 1px solid #ddd;
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
   padding: 12px 16px;
   border-radius: 8px;
   font-size: 14px;
@@ -338,13 +403,13 @@
   align-items: center;
   gap: 10px;
   transition: all 0.3s ease;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px var(--shadow);
   justify-content: flex-start;
   flex: 1;
 }
 
 .action-btn:hover {
-  background-color: #f8f9fa;
+  background-color: var(--bg-secondary);
   border-color: #3EB2FF;
 }
 
@@ -369,11 +434,11 @@
 }
 
 .stat-card {
-  background-color: white;
+  background-color: var(--card-bg);
   border-radius: 12px;
   padding: 25px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: transform 0.3s ease;
+  box-shadow: 0 2px 8px var(--shadow);
+  transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
   position: relative;
   overflow: hidden;
 }
@@ -420,15 +485,17 @@
 
 .stat-title {
   font-size: 14px;
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 8px;
   font-weight: 500;
+  transition: color 0.3s ease;
 }
 
 .stat-value {
   font-size: 28px;
   font-weight: 700;
-  color: #333;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
 }
 
 .stat-icon {
@@ -460,10 +527,11 @@
 
 /* Recent activities */
 .recent-activities-section {
-  background-color: white;
+  background-color: var(--card-bg);
   border-radius: 12px;
   padding: 25px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px var(--shadow);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .section-header {
@@ -518,14 +586,16 @@
 
 .activity-message {
   font-size: 15px;
-  color: #333;
+  color: var(--text-primary);
   line-height: 1.4;
   margin-bottom: 5px;
+  transition: color 0.3s ease;
 }
 
 .activity-time {
   font-size: 12px;
-  color: var(--dark-gray);
+  color: var(--text-tertiary);
+  transition: color 0.3s ease;
 }
 
 /* Responsive adjustments */

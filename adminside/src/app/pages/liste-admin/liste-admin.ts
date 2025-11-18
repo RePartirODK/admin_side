@@ -7,6 +7,7 @@ import { ConfirmationModalComponent } from '../../components/confirmation-modal/
 import { EditAdminModalComponent } from '../../components/edit-admin-modal/edit-admin-modal';
 import { NotificationsModalComponent, Notification } from '../../components/notifications-modal/notifications-modal';
 import { NotificationsService } from '../../services/notifications.service';
+import { ThemeService, Theme } from '../../services/theme.service';
 
 interface Admin {
   id: number;
@@ -37,16 +38,26 @@ export class ListeAdminComponent implements OnInit {
 
   notifications: Notification[] = [];
   currentUserName = '';
+  currentTheme: Theme = 'light';
 
   constructor(
     private router: Router,
     private adminsService: AdminsService,
-    private notificationsService: NotificationsService
+    private notificationsService: NotificationsService,
+    public themeService: ThemeService
   ) {}
 
   ngOnInit(): void {
     this.loadAdmins();
     this.loadCurrentUserName();
+    // S'abonner au thème
+    this.themeService.theme$.subscribe(theme => {
+      this.currentTheme = theme;
+    });
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
   }
 
   private loadAdmins(): void {
@@ -162,21 +173,40 @@ export class ListeAdminComponent implements OnInit {
     const email = localStorage.getItem('auth_email') || '';
     const cached = localStorage.getItem('auth_name');
     const cachedEmail = localStorage.getItem('auth_name_email');
-    if (cached && cachedEmail && cachedEmail.toLowerCase() === email.toLowerCase()) {
+    
+    // Nettoyer le cache si la valeur contient "Admin_System" ou est invalide
+    if (cached && (cached.toLowerCase().includes('admin_system') || cached.toLowerCase().includes('admin system'))) {
+      localStorage.removeItem('auth_name');
+      localStorage.removeItem('auth_name_email');
+    }
+    
+    // Utiliser le cache seulement si valide et ne contient pas "Admin_System"
+    const validCache = cached && cachedEmail && cachedEmail.toLowerCase() === email.toLowerCase() 
+        && !cached.toLowerCase().includes('admin_system') 
+        && !cached.toLowerCase().includes('admin system')
+        && cached.trim() !== '';
+    
+    if (validCache) {
       this.currentUserName = cached;
       return;
     }
+    
     if (!email) {
       this.currentUserName = '';
       return;
     }
+    
+    // Forcer le rechargement depuis l'API
     this.adminsService.listAdmins().subscribe({
       next: (admins: any[]) => {
         const me = (admins || []).find(a => (a?.email || '').toLowerCase() === email.toLowerCase());
         const name = me ? `${me.prenom || ''} ${me.nom || ''}`.trim() : email;
-        this.currentUserName = name;
-        localStorage.setItem('auth_name', name);
-        localStorage.setItem('auth_name_email', email);
+        this.currentUserName = name || email;
+        // Mettre à jour le cache seulement si le nom est valide
+        if (name && !name.toLowerCase().includes('admin_system') && !name.toLowerCase().includes('admin system')) {
+          localStorage.setItem('auth_name', name);
+          localStorage.setItem('auth_name_email', email);
+        }
       },
       error: () => {
         this.currentUserName = email;

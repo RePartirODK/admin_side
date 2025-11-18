@@ -7,12 +7,15 @@ import { PaiementsService } from '../../services/paiements.service';
 import { Paiement, StatutPaiement, PaiementDto } from '../../models/paiement.model';
 import { ValiderPaiementModalComponent } from '../../components/valider-paiement-modal/valider-paiement-modal';
 import { RefuserPaiementModalComponent } from '../../components/refuser-paiement-modal/refuser-paiement-modal';
+import { RembourserPaiementModalComponent } from '../../components/rembourser-paiement-modal/rembourser-paiement-modal';
 import { NotificationsModalComponent, Notification } from '../../components/notifications-modal/notifications-modal';
 import { NotificationsService } from '../../services/notifications.service';
 import { JeunesService } from '../../services/jeunes.service';
 import { FormationsService } from '../../services/formations.service';
 import { CentresService } from '../../services/centres.service';
 import { ParrainsService } from '../../services/parrains.service';
+import { AdminsService } from '../../services/admins.service';
+import { ThemeService, Theme } from '../../services/theme.service';
 
 @Component({
   selector: 'app-paiements',
@@ -23,6 +26,7 @@ import { ParrainsService } from '../../services/parrains.service';
     RouterLink,
     ValiderPaiementModalComponent,
     RefuserPaiementModalComponent,
+    RembourserPaiementModalComponent,
     NotificationsModalComponent
   ],
   templateUrl: './paiements.html',
@@ -40,12 +44,14 @@ export class PaiementsComponent implements OnInit {
   // Modales
   showValiderModal = false;
   showRefuserModal = false;
+  showRembourserModal = false;
   showNotificationsModal = false;
   selectedPaiement: Paiement | null = null;
 
   // Notifications
   notifications: Notification[] = [];
   currentUserName = '';
+  currentTheme: Theme = 'light';
 
   // Enum pour le template
   StatutPaiement = StatutPaiement;
@@ -57,12 +63,22 @@ export class PaiementsComponent implements OnInit {
     private jeunesService: JeunesService,
     private formationsService: FormationsService,
     private centresService: CentresService,
-    private parrainsService: ParrainsService
+    private parrainsService: ParrainsService,
+    private adminsService: AdminsService,
+    public themeService: ThemeService
   ) {}
 
   ngOnInit(): void {
     this.loadPaiements();
     this.loadCurrentUserName();
+    // S'abonner au thème
+    this.themeService.theme$.subscribe(theme => {
+      this.currentTheme = theme;
+    });
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
   }
 
   private loadPaiements(): void {
@@ -128,12 +144,23 @@ export class PaiementsComponent implements OnInit {
             console.warn(`⚠️ Formation #${p.idFormation} n'existe pas dans la liste des formations disponibles`);
           }
           
+          // Mapper le statut string vers l'enum
+          let statutMapped: StatutPaiement = StatutPaiement.EN_ATTENTE;
+          if (p.status) {
+            const statutStr = String(p.status).toUpperCase();
+            if (statutStr === 'EN_ATTENTE') statutMapped = StatutPaiement.EN_ATTENTE;
+            else if (statutStr === 'VALIDE') statutMapped = StatutPaiement.VALIDE;
+            else if (statutStr === 'REFUSE') statutMapped = StatutPaiement.REFUSE;
+            else if (statutStr === 'A_REMBOURSE') statutMapped = StatutPaiement.A_REMBOURSE;
+            else if (statutStr === 'REMBOURSE') statutMapped = StatutPaiement.REMBOURSE;
+          }
+
           return {
             id: p.id || 0,
             reference: p.reference || '',
             datePaiement: p.date ? new Date(p.date) : new Date(),
             montant: p.montant || 0,
-            statut: p.status || 'EN_ATTENTE',
+            statut: statutMapped,
             jeune: jeune || {
               id: p.idJeune || 0,
               prenom: '',
@@ -175,11 +202,46 @@ export class PaiementsComponent implements OnInit {
   private loadCurrentUserName(): void {
     const email = localStorage.getItem('auth_email') || '';
     const cached = localStorage.getItem('auth_name');
-    if (cached) {
+    const cachedEmail = localStorage.getItem('auth_name_email');
+    
+    // Nettoyer le cache si la valeur contient "Admin_System" ou est invalide
+    if (cached && (cached.toLowerCase().includes('admin_system') || cached.toLowerCase().includes('admin system'))) {
+      localStorage.removeItem('auth_name');
+      localStorage.removeItem('auth_name_email');
+    }
+    
+    // Utiliser le cache seulement si valide et ne contient pas "Admin_System"
+    const validCache = cached && cachedEmail && cachedEmail.toLowerCase() === email.toLowerCase() 
+        && !cached.toLowerCase().includes('admin_system') 
+        && !cached.toLowerCase().includes('admin system')
+        && cached.trim() !== '';
+    
+    if (validCache) {
       this.currentUserName = cached;
       return;
     }
-    this.currentUserName = email;
+    
+    if (!email) {
+      this.currentUserName = '';
+      return;
+    }
+    
+    // Forcer le rechargement depuis l'API
+    this.adminsService.listAdmins().subscribe({
+      next: (admins: any[]) => {
+        const me = (admins || []).find(a => (a?.email || '').toLowerCase() === email.toLowerCase());
+        const name = me ? `${me.prenom || ''} ${me.nom || ''}`.trim() : email;
+        this.currentUserName = name || email;
+        // Mettre à jour le cache seulement si le nom est valide
+        if (name && !name.toLowerCase().includes('admin_system') && !name.toLowerCase().includes('admin system')) {
+          localStorage.setItem('auth_name', name);
+          localStorage.setItem('auth_name_email', email);
+        }
+      },
+      error: () => {
+        this.currentUserName = email;
+      }
+    });
   }
 
   appliquerFiltres(): void {
@@ -190,7 +252,9 @@ export class PaiementsComponent implements OnInit {
 
       // Filtre statut
       if (this.filtreStatut !== 'TOUS') {
-        matchStatut = p?.statut === this.filtreStatut;
+        // Comparer la valeur de l'enum avec la string du filtre
+        matchStatut = p?.statut?.toString() === this.filtreStatut || 
+                      String(p?.statut) === this.filtreStatut;
       }
 
       // Filtre jeune
@@ -225,6 +289,10 @@ export class PaiementsComponent implements OnInit {
         return 'badge-vert';
       case StatutPaiement.REFUSE:
         return 'badge-rouge';
+      case StatutPaiement.A_REMBOURSE:
+        return 'badge-yellow';
+      case StatutPaiement.REMBOURSE:
+        return 'badge-blue';
       default:
         return 'badge-orange';
     }
@@ -239,6 +307,10 @@ export class PaiementsComponent implements OnInit {
         return 'Validé';
       case StatutPaiement.REFUSE:
         return 'Refusé';
+      case StatutPaiement.A_REMBOURSE:
+        return 'À rembourser';
+      case StatutPaiement.REMBOURSE:
+        return 'Remboursé';
       default:
         return statut || 'N/A';
     }
@@ -302,6 +374,35 @@ export class PaiementsComponent implements OnInit {
     });
   }
 
+  openRembourserModal(paiement: Paiement): void {
+    this.selectedPaiement = paiement;
+    this.showRembourserModal = true;
+  }
+
+  closeRembourserModal(): void {
+    this.showRembourserModal = false;
+    this.selectedPaiement = null;
+  }
+
+  onPaiementRembourse(id: number): void {
+    this.paiementsService.rembourserPaiement(id).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.showSnackbar(response.message || 'Paiement remboursé avec succès', 'success');
+          this.closeRembourserModal();
+          this.loadPaiements();
+        } else {
+          this.showSnackbar(response.message || 'Erreur lors du remboursement', 'error');
+        }
+      },
+      error: (err: any) => {
+        console.error('Erreur remboursement paiement:', err);
+        const errorMessage = err.error?.message || err.error?.error || 'Erreur lors du remboursement du paiement';
+        this.showSnackbar(errorMessage, 'error');
+      }
+    });
+  }
+
   // Notifications
   openNotificationsModal(): void {
     this.showNotificationsModal = true;
@@ -348,6 +449,14 @@ export class PaiementsComponent implements OnInit {
 
   getCountByStatut(statut: string): number {
     return this.paiementsFiltres.filter(p => p.statut === statut).length;
+  }
+
+  getCountARembourser(): number {
+    return this.paiementsFiltres.filter(p => p.statut === StatutPaiement.A_REMBOURSE).length;
+  }
+
+  getCountRembourse(): number {
+    return this.paiementsFiltres.filter(p => p.statut === StatutPaiement.REMBOURSE).length;
   }
 
   private showSnackbar(message: string, type: 'success' | 'error'): void {

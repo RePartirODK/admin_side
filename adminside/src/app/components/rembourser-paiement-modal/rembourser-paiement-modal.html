@@ -1,0 +1,101 @@
+<div class="modal-overlay" (click)="closeModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">Rembourser le paiement</h2>
+      <button class="close-btn" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body" *ngIf="paiement">
+      <div class="warning-message">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <p class="warning-title">Confirmation de remboursement</p>
+          <p class="warning-text">Êtes-vous sûr de vouloir rembourser ce paiement ? Cette action est irréversible.</p>
+        </div>
+      </div>
+
+      <div class="paiement-details">
+        <div class="detail-section">
+          <h3 class="section-title">
+            <i class="fas fa-info-circle"></i>
+            Détails du paiement
+          </h3>
+          <div class="detail-row">
+            <span class="detail-label">Référence:</span>
+            <span class="detail-value">{{ paiement.reference }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Montant:</span>
+            <span class="detail-value amount">{{ paiement.montant | number:'1.0-0' }} FCFA</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Date:</span>
+            <span class="detail-value">{{ paiement.datePaiement | date:'dd/MM/yyyy' }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3 class="section-title">
+            <i class="fas fa-user"></i>
+            Informations du bénéficiaire
+          </h3>
+          <div class="detail-row">
+            <span class="detail-label">Jeune:</span>
+            <span class="detail-value">{{ getNomCompletJeune() }}</span>
+          </div>
+          <div class="detail-row" *ngIf="paiement.parrain">
+            <span class="detail-label">Parrain:</span>
+            <span class="detail-value">{{ paiement.parrain.prenom || '' }} {{ paiement.parrain.nom || '' }}</span>
+          </div>
+          <div class="detail-row" *ngIf="!paiement.parrain">
+            <span class="detail-label">Type de paiement:</span>
+            <span class="detail-value">Paiement direct par le jeune</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3 class="section-title">
+            <i class="fas fa-graduation-cap"></i>
+            Formation
+          </h3>
+          <div class="detail-row">
+            <span class="detail-label">Formation:</span>
+            <span class="detail-value">{{ paiement.formation.titre }}</span>
+          </div>
+          <div class="detail-row" *ngIf="paiement.formation.centre">
+            <span class="detail-label">Centre:</span>
+            <span class="detail-value">{{ paiement.formation.centre.nom }}</span>
+          </div>
+          <div class="detail-row" *ngIf="paiement.formation.motifAnnulation">
+            <span class="detail-label">Motif d'annulation:</span>
+            <span class="detail-value motif">{{ paiement.formation.motifAnnulation }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="notification-info">
+        <i class="fas fa-envelope"></i>
+        <p *ngIf="paiement.parrain">
+          Un email de confirmation sera envoyé au parrain <strong>{{ paiement.parrain.prenom || '' }} {{ paiement.parrain.nom || '' }}</strong> avec les détails du remboursement.
+        </p>
+        <p *ngIf="!paiement.parrain">
+          Un email de confirmation sera envoyé au jeune <strong>{{ getNomCompletJeune() }}</strong> avec les détails du remboursement.
+        </p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+        Annuler
+      </button>
+      <button class="btn-primary" (click)="confirmerRemboursement()">
+        <i class="fas fa-money-bill-wave"></i>
+        Confirmer le remboursement
+      </button>
+    </div>
+  </div>
+</div>
+

@@ -60,6 +60,9 @@
         <!-- Bouton toggle pour mobile si nécessaire -->
       </div>
       <div class="header-right">
+        <div class="theme-toggle" (click)="toggleTheme()" title="Changer le thème">
+          <i class="fas" [class.fa-sun]="currentTheme === 'light'" [class.fa-moon]="currentTheme === 'dark'"></i>
+        </div>
         <div class="notifications" (click)="openNotificationsModal()">
           <i class="fas fa-bell"></i>
           <span class="notification-badge" *ngIf="getUnreadNotificationsCount() > 0">{{ getUnreadNotificationsCount() }}</span>

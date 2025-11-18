@@ -7,6 +7,7 @@ export interface Formation {
   id: number;
   titre: string;
   description?: string;
+  motifAnnulation?: string;
   centre?: {
     id: number;
     nom: string;
@@ -27,5 +28,6 @@ export class FormationsService {
     return this.http.get<Formation>(`${this.baseUrl}/${id}`);
   }
 }
+
 
 

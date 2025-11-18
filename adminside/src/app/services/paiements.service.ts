@@ -29,5 +29,12 @@ export class PaiementsService {
       { motif }
     );
   }
+
+  rembourserPaiement(id: number): Observable<{message: string; success: boolean; details?: string}> {
+    return this.http.put<{message: string; success: boolean; details?: string}>(
+      `${this.baseUrl}/rembourser/${id}`, 
+      {}
+    );
+  }
 }
 

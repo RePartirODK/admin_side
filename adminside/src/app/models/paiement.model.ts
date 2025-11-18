@@ -4,12 +4,15 @@ import { ResponseParrain } from './parrain.model';
 export enum StatutPaiement {
   EN_ATTENTE = 'EN_ATTENTE',
   VALIDE = 'VALIDE',
-  REFUSE = 'REFUSE'
+  REFUSE = 'REFUSE',
+  A_REMBOURSE = 'A_REMBOURSE',
+  REMBOURSE = 'REMBOURSE'
 }
 
 export interface Formation {
   id: number;
   titre: string;
+  motifAnnulation?: string;
   centre?: {
     id: number;
     nom: string;

@@ -4,12 +4,15 @@
 .centres-formation-page {
   display: flex;
   min-height: 100vh;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Sidebar */
 .sidebar {
   width: 250px;
-  background-color: var(--white);
+  background-color: var(--bg-primary);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -17,7 +20,8 @@
   left: 0;
   top: 0;
   z-index: 1000;
-  box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+  box-shadow: 2px 0 4px var(--shadow);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .logo-section {
@@ -137,7 +141,36 @@
 .header-right {
   display: flex;
   align-items: center;
-  gap: 25px;
+  gap: 20px;
+}
+
+/* Theme toggle */
+.theme-toggle {
+  position: relative;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.theme-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.theme-toggle i {
+  transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover i {
+  transform: rotate(15deg);
 }
 
 /* Notifications */
@@ -207,7 +240,8 @@
 .page-content {
   flex: 1;
   padding: 30px;
-  background-color: var(--light-gray);
+  background-color: var(--bg-secondary);
+  transition: background-color 0.3s ease;
 }
 
 /* Page header */
@@ -218,36 +252,42 @@
 .page-title {
   font-size: 28px;
   font-weight: 700;
-  color: #333;
+  color: #3EB2FF;
   margin: 0;
+  transition: color 0.3s ease;
 }
 
 /* Table container */
 .table-container {
-  background-color: white;
+  background-color: var(--card-bg);
   border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px var(--shadow);
   overflow: hidden;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .table-card {
   padding: 0;
+  background-color: var(--card-bg);
+  transition: background-color 0.3s ease;
 }
 
 /* Tabs styles */
 .tabs-container {
-  background-color: white;
+  background-color: var(--card-bg);
   border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px var(--shadow);
   overflow: hidden;
   margin-bottom: 30px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .tabs-header {
   display: flex;
-  background-color: #F8F9FA;
-  border-bottom: 1px solid #E9ECEF;
+  background-color: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
   overflow-x: auto;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .tab-button {
@@ -263,7 +303,7 @@
   gap: 10px;
   font-size: 14px;
   font-weight: 600;
-  color: #666;
+  color: var(--text-secondary);
   transition: all 0.3s ease;
   border-bottom: 3px solid transparent;
 }
@@ -274,7 +314,7 @@
 }
 
 .tab-button.active {
-  background-color: white;
+  background-color: var(--card-bg);
   color: var(--primary-blue);
   border-bottom-color: var(--primary-blue);
 }
@@ -299,15 +339,17 @@
 }
 
 .users-table thead {
-  background-color: #F8F9FA;
+  background-color: var(--bg-tertiary);
+  transition: background-color 0.3s ease;
 }
 
 .users-table th {
   padding: 20px 24px;
   text-align: left;
   font-weight: 600;
-  color: #495057;
-  border-bottom: 2px solid #E9ECEF;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+  border-bottom: 2px solid var(--border-color);
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -315,12 +357,20 @@
 
 .users-table td {
   padding: 20px 24px;
-  border-bottom: 1px solid #E9ECEF;
+  border-bottom: 1px solid var(--border-color);
   vertical-align: middle;
+  color: var(--text-primary);
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+.user-name {
+  color: var(--text-primary);
+  font-weight: 500;
+  transition: color 0.3s ease;
 }
 
 .users-table tbody tr:hover {
-  background-color: #F8F9FA;
+  background-color: var(--bg-tertiary);
   transition: background-color 0.2s ease;
 }
 
@@ -331,13 +381,15 @@
 /* Table cell styles */
 .user-name {
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
   font-size: 15px;
+  transition: color 0.3s ease;
 }
 
 .user-email {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 14px;
+  transition: color 0.3s ease;
 }
 
 /* Status badges */
@@ -356,14 +408,29 @@
   color: #2E7D32;
 }
 
+.dark-mode .status-active {
+  background-color: rgba(46, 125, 50, 0.3);
+  color: #81c784;
+}
+
 .status-pending {
   background-color: #FFF3CD;
   color: #856404;
 }
 
+.dark-mode .status-pending {
+  background-color: rgba(255, 193, 7, 0.3);
+  color: #ffd54f;
+}
+
 .status-refused {
   background-color: #F8D7DA;
   color: #721C24;
+}
+
+.dark-mode .status-refused {
+  background-color: rgba(211, 47, 47, 0.3);
+  color: #e57373;
 }
 
 /* State badges */
@@ -382,9 +449,19 @@
   color: #1976D2;
 }
 
+.dark-mode .state-active {
+  background-color: rgba(33, 150, 243, 0.3);
+  color: #64b5f6;
+}
+
 .state-blocked {
   background-color: #FFEBEE;
   color: #D32F2F;
+}
+
+.dark-mode .state-blocked {
+  background-color: rgba(211, 47, 47, 0.3);
+  color: #e57373;
 }
 
 /* Action buttons */

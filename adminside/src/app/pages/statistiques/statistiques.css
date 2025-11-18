@@ -12,19 +12,47 @@
   --black: #000000;
   --sidebar-width: 250px;
   --navbar-height: 70px;
+  
+  /* Variables pour le thème */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #ffffff;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+  --border-color: #e5e7eb;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --card-bg: #ffffff;
+}
+
+.dark-mode {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --bg-tertiary: #252525;
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --text-tertiary: #808080;
+  --border-color: #404040;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --card-bg: #2d2d2d;
+  --light-gray: #2d2d2d;
+  --medium-gray: #404040;
+  --dark-gray: #b0b0b0;
 }
 
 /* Admin Dashboard Layout */
 .admin-dashboard {
   display: flex;
   min-height: 100vh;
-  background-color: var(--light-gray);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Sidebar */
 .sidebar {
   width: 250px;
-  background-color: var(--white);
+  background-color: var(--bg-primary);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -32,7 +60,8 @@
   left: 0;
   top: 0;
   z-index: 1000;
-  box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+  box-shadow: 2px 0 4px var(--shadow);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .logo-section {
@@ -67,7 +96,7 @@
   display: flex;
   align-items: center;
   padding: 15px 20px;
-  color: #666;
+  color: var(--text-secondary);
   text-decoration: none;
   transition: all 0.3s ease;
 }
@@ -96,7 +125,8 @@
 
 .logout-section {
   padding: 20px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border-color);
+  transition: border-color 0.3s ease;
 }
 
 .logout-link {
@@ -152,6 +182,35 @@
   gap: 20px;
 }
 
+/* Theme toggle */
+.theme-toggle {
+  position: relative;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.theme-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.theme-toggle i {
+  transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover i {
+  transform: rotate(15deg);
+}
+
 .notifications {
   position: relative;
   color: var(--white);
@@ -203,11 +262,12 @@
 /* Page Content */
 .statistics-content {
   padding: 30px;
-  background-color: var(--light-gray);
+  background-color: var(--bg-secondary);
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   gap: 30px;
+  transition: background-color 0.3s ease;
 }
 
 /* Chart Container */
@@ -216,19 +276,21 @@
 }
 
 .chart-card {
-  background-color: var(--white);
+  background-color: var(--card-bg);
   border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 15px var(--shadow);
   padding: 30px;
   height: 100%;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .chart-title {
   font-size: 24px;
   font-weight: 700;
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 30px;
   text-align: left;
+  transition: color 0.3s ease;
 }
 
 /* Bar Chart */
@@ -273,9 +335,10 @@
 
 .bar-label {
   font-size: 12px;
-  color: #666;
+  color: var(--text-secondary);
   font-weight: 500;
   text-align: center;
+  transition: color 0.3s ease;
 }
 
 /* Tooltip */

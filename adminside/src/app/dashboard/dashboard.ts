@@ -12,6 +12,7 @@ import { AdminsService } from '../services/admins.service';
 import { DomainsService } from '../services/domains.service';
 import { StatisticsService } from '../services/statistics.service';
 import { NotificationsService } from '../services/notifications.service';
+import { ThemeService, Theme } from '../services/theme.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -37,13 +38,15 @@ export class DashboardComponent implements OnInit {
   pendingCount = 0;
   activeAdminsCount = 0;
   currentUserName = '';
+  currentTheme: Theme = 'light';
 
   constructor(
     private router: Router,
     private adminsService: AdminsService,
     private domainsService: DomainsService,
     private statisticsService: StatisticsService,
-    private notificationsService: NotificationsService
+    private notificationsService: NotificationsService,
+    public themeService: ThemeService
   ) {}
 
   ngOnInit(): void {
@@ -57,6 +60,14 @@ export class DashboardComponent implements OnInit {
       this.notifications = [];
     }
     this.loadCurrentUserName();
+    // S'abonner au thème
+    this.themeService.theme$.subscribe(theme => {
+      this.currentTheme = theme;
+    });
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
   }
 
   addAdmin(): void {
@@ -67,23 +78,56 @@ export class DashboardComponent implements OnInit {
     const email = localStorage.getItem('auth_email') || '';
     const cached = localStorage.getItem('auth_name');
     const cachedEmail = localStorage.getItem('auth_name_email');
-    if (cached && cachedEmail && cachedEmail.toLowerCase() === email.toLowerCase()) {
+    
+    console.log('=== DEBUG loadCurrentUserName (Dashboard) ===');
+    console.log('Email:', email);
+    console.log('Cached name:', cached);
+    console.log('Cached email:', cachedEmail);
+    
+    // Nettoyer le cache si la valeur contient "Admin_System" ou est invalide
+    if (cached && (cached.toLowerCase().includes('admin_system') || cached.toLowerCase().includes('admin system'))) {
+      console.log('⚠️ Cache invalide détecté, nettoyage...');
+      localStorage.removeItem('auth_name');
+      localStorage.removeItem('auth_name_email');
+    }
+    
+    // Utiliser le cache seulement si valide et ne contient pas "Admin_System"
+    const validCache = cached && cachedEmail && cachedEmail.toLowerCase() === email.toLowerCase() 
+        && !cached.toLowerCase().includes('admin_system') 
+        && !cached.toLowerCase().includes('admin system')
+        && cached.trim() !== '';
+    
+    if (validCache) {
+      console.log('✅ Utilisation du cache valide:', cached);
       this.currentUserName = cached;
       return;
     }
+    
     if (!email) {
+      console.log('❌ Pas d\'email trouvé');
       this.currentUserName = '';
       return;
     }
+    
+    console.log('🔄 Rechargement depuis l\'API...');
+    // Forcer le rechargement depuis l'API
     this.adminsService.listAdmins().subscribe({
       next: (admins: any[]) => {
+        console.log('📥 Admins reçus:', admins?.length || 0);
         const me = (admins || []).find(a => (a?.email || '').toLowerCase() === email.toLowerCase());
+        console.log('👤 Admin trouvé:', me ? `${me.prenom} ${me.nom}` : 'NON TROUVÉ');
         const name = me ? `${me.prenom || ''} ${me.nom || ''}`.trim() : email;
-        this.currentUserName = name;
-        localStorage.setItem('auth_name', name);
-        localStorage.setItem('auth_name_email', email);
+        this.currentUserName = name || email;
+        console.log('✅ Nom défini:', this.currentUserName);
+        // Mettre à jour le cache seulement si le nom est valide
+        if (name && !name.toLowerCase().includes('admin_system') && !name.toLowerCase().includes('admin system')) {
+          localStorage.setItem('auth_name', name);
+          localStorage.setItem('auth_name_email', email);
+          console.log('💾 Cache mis à jour');
+        }
       },
-      error: () => {
+      error: (err) => {
+        console.error('❌ Erreur API:', err);
         this.currentUserName = email;
       }
     });

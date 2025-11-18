@@ -56,9 +56,12 @@
     <!-- En-tête -->
     <header class="header">
       <div class="header-left">
-        <h1 class="page-title">Gestion des Paiements</h1>
+        <!-- Bouton toggle pour mobile si nécessaire -->
       </div>
       <div class="header-right">
+        <div class="theme-toggle" (click)="toggleTheme()" title="Changer le thème">
+          <i class="fas" [class.fa-sun]="currentTheme === 'light'" [class.fa-moon]="currentTheme === 'dark'"></i>
+        </div>
         <div class="notifications" (click)="openNotificationsModal()">
           <i class="fas fa-bell"></i>
           <span class="notification-badge" *ngIf="getUnreadNotificationsCount() > 0">{{ getUnreadNotificationsCount() }}</span>
@@ -74,6 +77,11 @@
 
     <!-- Contenu du dashboard -->
     <div class="dashboard-content">
+      <!-- Titre de la page -->
+      <div class="page-header">
+        <h1 class="page-title">Gestion des Paiements</h1>
+      </div>
+
       <!-- Section filtres -->
       <div class="filters-section">
         <div class="filters-container">
@@ -84,6 +92,8 @@
               <option value="EN_ATTENTE">En attente</option>
               <option value="VALIDE">Validé</option>
               <option value="REFUSE">Refusé</option>
+              <option value="A_REMBOURSE">À rembourser</option>
+              <option value="REMBOURSE">Remboursé</option>
             </select>
           </div>
 
@@ -151,7 +161,14 @@
                     <span *ngIf="!paiement?.parrain" class="non-parraine">Non parrainé</span>
                   </div>
                 </td>
-                <td>{{ paiement?.formation?.titre || 'N/A' }}</td>
+                <td>
+                  <div class="formation-cell">
+                    <span class="formation-title">{{ paiement?.formation?.titre || 'N/A' }}</span>
+                    <span *ngIf="paiement?.formation?.motifAnnulation" class="motif-annulation" title="Motif d'annulation: {{ paiement?.formation?.motifAnnulation }}">
+                      <i class="fas fa-info-circle"></i> Annulée
+                    </span>
+                  </div>
+                </td>
                 <td>
                   <div class="centre-cell">
                     <span class="centre-name">{{ paiement?.formation?.centre?.nom || 'N/A' }}</span>
@@ -172,7 +189,12 @@
                       <i class="fas fa-times"></i>
                     </button>
                   </div>
-                  <div class="no-actions" *ngIf="paiement?.statut !== StatutPaiement.EN_ATTENTE">
+                  <div class="action-buttons" *ngIf="paiement?.statut === StatutPaiement.A_REMBOURSE">
+                    <button class="btn-action btn-rembourser" (click)="openRembourserModal(paiement)" title="Rembourser">
+                      <i class="fas fa-money-bill-wave"></i>
+                    </button>
+                  </div>
+                  <div class="no-actions" *ngIf="paiement?.statut !== StatutPaiement.EN_ATTENTE && paiement?.statut !== StatutPaiement.A_REMBOURSE">
                     <span class="text-muted">-</span>
                   </div>
                 </td>
@@ -207,6 +229,14 @@
             <span class="stat-label">Refusés:</span>
             <span class="stat-value stat-red">{{ getCountByStatut('REFUSE') }}</span>
           </div>
+          <div class="stat-item">
+            <span class="stat-label">À rembourser:</span>
+            <span class="stat-value stat-yellow">{{ getCountARembourser() }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Remboursés:</span>
+            <span class="stat-value stat-blue">{{ getCountRembourse() }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -228,6 +258,14 @@
   (modalClosed)="closeRefuserModal()"
   (paiementRefuse)="onPaiementRefuse($event)">
 </app-refuser-paiement-modal>
+
+<!-- Modale de remboursement -->
+<app-rembourser-paiement-modal
+  *ngIf="showRembourserModal"
+  [paiement]="selectedPaiement"
+  (modalClosed)="closeRembourserModal()"
+  (paiementRembourse)="onPaiementRembourse($event)">
+</app-rembourser-paiement-modal>
 
 <!-- Notifications Modal -->
 <app-notifications-modal
